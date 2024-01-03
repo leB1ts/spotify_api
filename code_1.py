@@ -15,52 +15,57 @@ from pydub.playback import play
 from threading import Thread
 
 
+def download_song():
+  load_dotenv()
 
-load_dotenv()
-
-client_id = os.environ.get("SPOTIPY_CLIENT_ID")
-client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
+  client_id = os.environ.get("SPOTIPY_CLIENT_ID")
+  client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
 
 
-spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
-spotdl = Spotdl(client_id,
-                client_secret)
+  spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
+  spotdl = Spotdl(client_id,
+                  client_secret)
 
-# Grab ten random songs that are "metal", return their names
-offset = random.randint(0, 1000)
-query = "genre:metal"
-track_urls = [[x["name"], x["external_urls"]["spotify"]]
-              for x in spotify.search(query, offset=offset)["tracks"]["items"]]
+  # Grab ten random songs that are "metal", return their names
+  offset = random.randint(0, 1000)
+  query = "genre:metal"
+  track_urls = [[x["name"], x["external_urls"]["spotify"]]
+                for x in spotify.search(query, offset=offset)["tracks"]["items"]]
 
-# Search for the song
-print(track_urls)
-songs = spotdl.search(random.choice(track_urls))
+  # Search for the song
+  print(track_urls)
+  songs = spotdl.search(random.choice(track_urls))
 
-# Attempt to download the song
-#results = spotdl.download_songs(songs)
+  # Attempt to download the song
+  #results = spotdl.download_songs(songs)
 
-song = spotdl.download(songs[0])
+  song = spotdl.download(songs[0])
 
-#find the song name of the mp3
-mp3_files = glob.glob("*.mp3")
-print(mp3_files)
+  #find the song name of the mp3
+  mp3_files = glob.glob("*.mp3")
+  print(mp3_files)
 
-#need to get the name without the [" "] so it can be played using playsound
-song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ","")
-print(song_name)
+  #need to get the name without the [" "] so it can be played using playsound
+  song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ","")
+  print(song_name)
 
-file = mp3_files[0]
+  file = mp3_files[0]
 
-split = song_name.partition("-")
-track_name = split[0]
-artist = split[2]
-artist_name = artist.partition(".")
-artist_name = artist_name[0]
-print(track_name,artist_name)
+  global track_name
+  global artist_name
 
-print(file)
+  split = song_name.partition("-")
+  track_name = split[0]
+  artist = split[2]
+  artist_name = artist.partition(".")
+  artist_name = artist_name[0]
+  
+  print(track_name,artist_name)
+  
 
-os.rename(file,"cook.mp3")
+  print(file)
+
+  os.rename(file,"cook.mp3")
 
 def play_audio():
   playing = AudioSegment.from_mp3("cook.mp3")
@@ -68,8 +73,11 @@ def play_audio():
   first_10_seconds = playing[:ten_seconds]
   play(first_10_seconds)
 
-def threads():
+def download_commmand():
+  Thread(target=download_song).start()
+def play_audio_command():
   Thread(target=play_audio, daemon=True).start()
+
 
 def deleting():
   os.remove("cook.mp3")
@@ -91,13 +99,15 @@ def open_window():
   window.title('Guess the artist or song')
   
   Button(window,text='Close',command=deleting).pack()
-  Button(window,text='Play',command=threads).pack()
+  Button(window,text='Play',command=lambda:[download_commmand,play_audio_command]).pack()
   Label(window,text="Guess:").pack()
   value_entry = Entry(window)
   value_entry.pack()
 
   # Define our answers
   funcid = None
+  global track_name
+  global artist_name
   answers = [track_name, artist_name]
 
   # Called whenever we press the enter key
@@ -134,8 +144,8 @@ if __name__ == "__main__":
   app.mainloop()
 
 
-
-
+#need to loop wihthout changing the tk section somehow
+#def the downloading of the song and loop it as a command?
 
 
 
