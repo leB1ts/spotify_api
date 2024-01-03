@@ -21,30 +21,45 @@ import tkinter as tkinter
 def user_not_found_message():
   #message to display if the user is not found
   window5 = Toplevel()
-  Label(window5,text='User not found')
+  Label(window5,text='User not found').pack()
   Button(window5,text='Ok',command=window5.destroy).pack()
 
 def wrong_password_message():
   #message to display if the password is wrong
   window6 = Toplevel()
-  Label(window6,text='Wrong password')
+  Label(window6,text='Wrong password').pack()
   Button(window6,text='Ok',command=window6.destroy).pack()
 
 def login():
   window2 = Toplevel()
   window2.geometry('300x200')
   window2.title('Login')
+  
   Label(window2,text='Username').pack()
-  username = Entry(window2).pack()
-  if not repeat_username(username):
-    user_not_found_message()
-    return
+  username = Entry(window2)
+  username.pack()
+  
   Label(window2,text='Password').pack()
-  password = Entry(window2).pack()
-  if not verfiy(username, password):
-    wrong_password_message()
-    return
-  Button(window2,text='Login',command=verfiy).pack()
+  password = Entry(window2)
+  password.pack()
+  
+  def try_login():
+    user_entered = username.get()
+    if not repeat_username(user_entered):
+      user_not_found_message()
+      return
+    
+    password_entered = password.get()
+    if not verify(user_entered, password_entered):
+      wrong_password_message()
+      return
+    else:
+      window2.destroy()
+      start_window = Toplevel()
+      start_window.geometry('500x300')  
+      start_window.title('Guess the artist or song')  
+      Button(start_window,text='Close',command=start_window.destroy).pack()
+  Button(window2,text='Login',command=try_login).pack()
 
 user_filepath = 'users.txt'
 special_keys = "!@#$%^&*()_+[]:;'\|,./<>?`~-="
@@ -61,7 +76,7 @@ def generate_password():
 def password_message(password):
   #message to display the password
   window4 = Toplevel()
-  Label(window4,text='Your password is ' + password + '').pack()
+  Label(window4,text='Your password is ' + password + '/nWrite it down to remember').pack()
   Button(window4,text='Ok',command=window4.destroy).pack()
 
 #for security reasons, we need to hash the password
@@ -94,14 +109,14 @@ def repeat_username(username):
   return False
 
 
-def verfiy(username,password):
+def verify(username,password):
    #check if the username and password are correct from the database
   with open(user_filepath,'r') as file:
     for line in file:
       breaking = line.split()
       if breaking[0] == username:
-        hash_password = breaking[1]
-        if hash_password == hash_password(password):
+        hashed_password = breaking[1]
+        if hashed_password == hash_password(password):
           #correct password
           return True
         else:
