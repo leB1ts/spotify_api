@@ -58,6 +58,8 @@ def login():
       start_window = Toplevel()
       start_window.geometry('500x300')  
       start_window.title('Guess the artist or song')  
+      Button(start_window,text="Play Game",command=play_game).pack()
+      Button(start_window,text="stats",command=stats).pack()
       Button(start_window,text='Close',command=start_window.destroy).pack()
   Button(window2,text='Login',command=try_login).pack()
 

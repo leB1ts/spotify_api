@@ -67,6 +67,10 @@ def download_song():
 
   os.rename(file,"cook.mp3")
 
+def delayed_function():
+  label = Label(window,text="you ran out of time")
+  label.pack()
+
 def play_audio():
   playing = AudioSegment.from_mp3("cook.mp3")
   ten_seconds = 10 * 1000
@@ -74,14 +78,20 @@ def play_audio():
   play(first_10_seconds)
 
 def download_commmand():
-  Thread(target=download_song).start()
-def play_audio_command():
+  download_thread = Thread(target=download_song)
+  download_thread.start()
+  #wait for download to finish
+  download_thread.join()
+  #play the song
   Thread(target=play_audio, daemon=True).start()
+  window.after(17000,delayed_function)
 
 
 def deleting():
-  os.remove("cook.mp3")
-  exit()
+  try:
+    os.remove("cook.mp3")
+  except OSError as e:
+    print(f"Error: {e.strerror}. File cook.mp3 could not be removed.")
 
 
 from tkinter import (
@@ -94,12 +104,13 @@ from tkinter import (
 import tkinter as tkinter
 
 def open_window():
+  global window
   window = Toplevel()
   window.geometry('500x300')
   window.title('Guess the artist or song')
   
   Button(window,text='Close',command=deleting).pack()
-  Button(window,text='Play',command=lambda:[download_commmand,play_audio_command]).pack()
+  Button(window,text='Play',command=download_commmand).pack()
   Label(window,text="Guess:").pack()
   value_entry = Entry(window)
   value_entry.pack()
@@ -107,7 +118,9 @@ def open_window():
   # Define our answers
   funcid = None
   global track_name
+  track_name = ""
   global artist_name
+  artist_name = ""
   answers = [track_name, artist_name]
 
   # Called whenever we press the enter key
