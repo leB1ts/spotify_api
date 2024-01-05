@@ -68,8 +68,17 @@ def download_song():
   os.rename(file,"cook.mp3")
 
 def delayed_function():
-  label = Label(window,text="you ran out of time")
+  label = Label(window2,text="you ran out of time")
   label.pack()
+  game_over()
+
+def game_over():
+  deleting()
+  windowend = Toplevel()
+  windowend.geometry('500x300')
+  windowend.title('Game Over')
+  Label(windowend,text='Game Over').pack()
+  Button(windowend,text='Exit',command=windowend.destroy).pack()
 
 def play_audio():
   playing = AudioSegment.from_mp3("cook.mp3")
@@ -77,14 +86,20 @@ def play_audio():
   first_10_seconds = playing[:ten_seconds]
   play(first_10_seconds)
 
+def play_audio_and_then_delay():
+  play_audio()
+  window2.after(5000, delayed_function)
+
 def download_commmand():
   download_thread = Thread(target=download_song)
   download_thread.start()
   #wait for download to finish
   download_thread.join()
   #play the song
-  Thread(target=play_audio, daemon=True).start()
-  window.after(17000,delayed_function)
+  #SCEW THE BACKGROUND TASK PLAY AUDIO THEN GUESS AFTER QUICK FIX MOVE ON
+  thread = Thread(target=play_audio_and_then_delay, daemon=True)
+  thread.start()
+  
 
 
 def deleting():
@@ -104,15 +119,16 @@ from tkinter import (
 import tkinter as tkinter
 
 def open_window():
-  global window
-  window = Toplevel()
-  window.geometry('500x300')
-  window.title('Guess the artist or song')
+  global window2
   
-  Button(window,text='Close',command=deleting).pack()
-  Button(window,text='Play',command=download_commmand).pack()
-  Label(window,text="Guess:").pack()
-  value_entry = Entry(window)
+  window2 = Toplevel()
+  window2.geometry('500x300')
+  window2.title('Guess the artist or song')
+  
+  Button(window2,text='Close',command=deleting).pack()
+  Button(window2,text='Play',command=download_commmand).pack()
+  Label(window2,text="Guess:").pack()
+  value_entry = Entry(window2)
   value_entry.pack()
 
   # Define our answers
@@ -130,7 +146,7 @@ def open_window():
 
     # Check their answer is within the answers array
     if value in answers:
-      Label(window, text="correct").pack()
+      Label(window2, text="correct").pack()
       
 
       # Clear the text they entered
@@ -138,15 +154,15 @@ def open_window():
     else:
       # Clear the text they entered
       value_entry.delete(0, tkinter.END)
-      Label(window, text="incorrect").pack()
+      Label(window2, text="incorrect").pack()
 
 
   
   # Listen to when user presses enter
-  funcid = window.bind("<Return>",key_pressed)
+  funcid = window2.bind("<Return>",key_pressed)
 
-  window.bind('<Return>', key_pressed)
-  window.grab_set()
+  window2.bind('<Return>', key_pressed)
+  window2.grab_set()
 
 if __name__ == "__main__":
   app = Tk()
@@ -155,6 +171,7 @@ if __name__ == "__main__":
   Button(app,text='Start Game',command=open_window).pack()
   Button(app,text='Exit',command=app.destroy).pack()
   app.mainloop()
+  
 
 
 #need to loop wihthout changing the tk section somehow
