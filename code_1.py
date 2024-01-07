@@ -16,56 +16,59 @@ from threading import Thread
 
 
 def download_song():
-  load_dotenv()
+  # load_dotenv()
 
-  client_id = os.environ.get("SPOTIPY_CLIENT_ID")
-  client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
+  # client_id = os.environ.get("SPOTIPY_CLIENT_ID")
+  # client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
 
 
-  spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
-  spotdl = Spotdl(client_id,
-                  client_secret)
+  # spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
+  # spotdl = Spotdl(client_id,
+  #                 client_secret)
 
-  # Grab ten random songs that are "metal", return their names
-  offset = random.randint(0, 1000)
-  query = "genre:metal"
-  track_urls = [[x["name"], x["external_urls"]["spotify"]]
-                for x in spotify.search(query, offset=offset)["tracks"]["items"]]
+  # # Grab ten random songs that are "metal", return their names
+  # offset = random.randint(0, 1000)
+  # query = "genre:metal"
+  # track_urls = [[x["name"], x["external_urls"]["spotify"]]
+  #               for x in spotify.search(query, offset=offset)["tracks"]["items"]]
 
-  # Search for the song
-  print(track_urls)
-  songs = spotdl.search(random.choice(track_urls))
+  # # Search for the song
+  # print(track_urls)
+  # songs = spotdl.search(random.choice(track_urls))
 
-  # Attempt to download the song
-  #results = spotdl.download_songs(songs)
+  # # Attempt to download the song
+  # #results = spotdl.download_songs(songs)
 
-  song = spotdl.download(songs[0])
+  # song = spotdl.download(songs[0])
 
-  #find the song name of the mp3
-  mp3_files = glob.glob("*.mp3")
-  print(mp3_files)
+  # #find the song name of the mp3
+  # mp3_files = glob.glob("*.mp3")
+  # print(mp3_files)
 
-  #need to get the name without the [" "] so it can be played using playsound
-  song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ","")
-  print(song_name)
+  # #need to get the name without the [" "] so it can be played using playsound
+  # song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ","")
+  # print(song_name)
 
-  file = mp3_files[0]
+  # file = mp3_files[0]
+  # os.rename(file,"cook.mp3")
 
   global track_name
+  track_name = "PaganThrone"
   global artist_name
+  artist_name = "The Expansion of the Black Empire"
 
-  split = song_name.partition("-")
-  track_name = split[0]
-  artist = split[2]
-  artist_name = artist.partition(".")
-  artist_name = artist_name[0]
+  # split = song_name.partition("-")
+  # track_name = split[0]
+  # artist = split[2]
+  # artist_name = artist.partition(".")
+  # artist_name = artist_name[0]
   
-  print(track_name,artist_name)
-  
+  # print(track_name,artist_name)
 
-  print(file)
+  # print(file)
 
-  os.rename(file,"cook.mp3")
+  instance = GameWindow()
+  instance.play_audio()
 
 def delayed_function():
   label = Label(window2,text="you ran out of time")
@@ -80,11 +83,7 @@ def game_over():
   Label(windowend,text='Game Over').pack()
   Button(windowend,text='Exit',command=windowend.destroy).pack()
 
-def play_audio():
-  playing = AudioSegment.from_mp3("cook.mp3")
-  ten_seconds = 10 * 1000
-  first_10_seconds = playing[:ten_seconds]
-  play(first_10_seconds)
+
 
 def play_audio_and_then_delay():
   play_audio()
@@ -97,16 +96,11 @@ def download_commmand():
   download_thread.join()
   #play the song
   #SCEW THE BACKGROUND TASK PLAY AUDIO THEN GUESS AFTER QUICK FIX MOVE ON
-  thread = Thread(target=play_audio_and_then_delay, daemon=True)
+  thread = Thread(target=play_audio, daemon=False)
   thread.start()
   
 
 
-def deleting():
-  try:
-    os.remove("cook.mp3")
-  except OSError as e:
-    print(f"Error: {e.strerror}. File cook.mp3 could not be removed.")
 
 
 from tkinter import (
@@ -118,57 +112,41 @@ from tkinter import (
 )
 import tkinter as tkinter
 
-def open_window():
-  global window2
-  
-  window2 = Toplevel()
-  window2.geometry('500x300')
-  window2.title('Guess the artist or song')
-  
-  Button(window2,text='Close',command=deleting).pack()
-  Button(window2,text='Play',command=download_commmand).pack()
-  Label(window2,text="Guess:").pack()
-  value_entry = Entry(window2)
-  value_entry.pack()
+class GameWindow:
+    def __init__(self):
+        self.window2 = Toplevel()
+        self.window2.geometry('500x300')
+        self.window2.title('Guess the artist or song')
+        Button(self.window2,text='Close',command=self.deleting).pack()
+        Button(self.window2,text='Play',command=download_song).pack()
+        self.guess()
 
-  # Define our answers
-  funcid = None
-  global track_name
-  track_name = ""
-  global artist_name
-  artist_name = ""
-  answers = [track_name, artist_name]
+    def guess(self):
+        Label(self.window2,text="Guess:").pack()
+        value_entry = Entry(self.window2)
+        value_entry.pack()
+        # Rest of your guess function...
 
-  # Called whenever we press the enter key
-  def key_pressed(key: tkinter.Event):
-    # Grab the user input
-    value = str(value_entry.get()).strip()
+    def play_audio(self):
+        playing = AudioSegment.from_mp3("cook.mp3")
+        ten_seconds = 10 * 1000
+        first_10_seconds = playing[:ten_seconds]
+        play(first_10_seconds)
+        # self.guess()
+    
+    def deleting():
+      try:
+        os.remove("cook.mp3")
+      except OSError as e:
+        print(f"Error: {e.strerror}. File cook.mp3 could not be removed.")
 
-    # Check their answer is within the answers array
-    if value in answers:
-      Label(window2, text="correct").pack()
-      
-
-      # Clear the text they entered
-      value_entry.delete(0, tkinter.END)
-    else:
-      # Clear the text they entered
-      value_entry.delete(0, tkinter.END)
-      Label(window2, text="incorrect").pack()
-
-
-  
-  # Listen to when user presses enter
-  funcid = window2.bind("<Return>",key_pressed)
-
-  window2.bind('<Return>', key_pressed)
-  window2.grab_set()
-
+    # Rest of your functions...
 if __name__ == "__main__":
   app = Tk()
   app.geometry('300x200')
   app.title('Music Quiz ?')
-  Button(app,text='Start Game',command=open_window).pack()
+  game_window = GameWindow()
+  Button(app,text='Start Game',command=game_window).pack()
   Button(app,text='Exit',command=app.destroy).pack()
   app.mainloop()
   
@@ -177,7 +155,10 @@ if __name__ == "__main__":
 #need to loop wihthout changing the tk section somehow
 #def the downloading of the song and loop it as a command?
 
-
+# you should start the code again
+# keep in mind to use ASYNC !!!!!
+# also find another library that lets you only download part of the song
+# you havent written much anyway
 
 
 #guess = input("Enter the song or artist name without spaces and caps:\n")
