@@ -127,6 +127,7 @@ class GameWindow:
         playing = AudioSegment.from_mp3("cook.mp3")
         ten_seconds = 10 * 1000
         first_10_seconds = playing[:ten_seconds]
+        #pass False as the second argument. If still error just remove audio playing till rest of game done
         play(first_10_seconds)
         self.guess()
     
