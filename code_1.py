@@ -142,8 +142,7 @@ if __name__ == "__main__":
   app = Tk()
   app.geometry('300x200')
   app.title('Music Quiz ?')
-  game_window = GameWindow()
-  Button(app,text='Start Game',command=game_window.__init__).pack()
+  Button(app,text='Start Game',command=GameWindow()).pack()
   Button(app,text='Exit',command=app.destroy).pack()
   app.mainloop()
   
