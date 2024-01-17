@@ -25,13 +25,16 @@ import tkinter as tkinter
 
 class GameWindow:
     def __init__(self):
-        self.window2 = Toplevel()
-        self.window2.geometry('500x300')
-        self.window2.title('Guess the artist or song')
-        Button(self.window2,text='Close',command=self.deleting).pack()
-        Button(self.window2,text='Play',command=self.download_song).pack()
+        pass
         
-
+    def start_game(self):
+      self.window2 = Toplevel()
+      self.window2.geometry('500x300')
+      self.window2.title('Guess the artist or song')
+      Button(self.window2,text='Close',command=self.deleting).pack()
+      Button(self.window2,text='Play',command=self.play_audio).pack()
+      self.download_song()
+      
     def download_song(self):
       load_dotenv()
 
@@ -84,7 +87,7 @@ class GameWindow:
 
       os.rename(file,"cook.mp3")    
 
-      self.play_audio()
+      #self.play_audio()
 
     def guess(self):
         Label(self.window2,text="Guess:").pack()
@@ -127,7 +130,6 @@ class GameWindow:
         playing = AudioSegment.from_mp3("cook.mp3")
         ten_seconds = 10 * 1000
         first_10_seconds = playing[:ten_seconds]
-        #pass False as the second argument. If still error just remove audio playing till rest of game done
         play(first_10_seconds)
         self.guess()
     
@@ -143,7 +145,7 @@ if __name__ == "__main__":
   app.geometry('300x200')
   app.title('Music Quiz ?')
   game_window = GameWindow()
-  Button(app,text='Start Game',command=game_window.__init__).pack()
+  Button(app,text='Start Game',command=game_window.start_game).pack()
   Button(app,text='Exit',command=app.destroy).pack()
   app.mainloop()
   
