@@ -1,0 +1,4 @@
+- pull the spotify info out of download song and set at the start so can download multiple songs
+- set the time frames to move onto next song and guess window
+- make login system sql instead of text base
+- integrate client server 

@@ -32,8 +32,8 @@ class GameWindow:
       self.window2.geometry('500x300')
       self.window2.title('Guess the artist or song')
       Button(self.window2,text='Close',command=self.deleting).pack()
-      Button(self.window2,text='Play',command=self.play_audio).pack()
-      self.download_song()
+      Button(self.window2,text='Play',command=self.play_next).pack()
+      
       
     def download_song(self):
       load_dotenv()
@@ -95,10 +95,6 @@ class GameWindow:
         value_entry.pack()
         # Define our answers
         funcid = None
-        global track_name
-        track_name = ""
-        global artist_name
-        artist_name = ""
         answers = [track_name, artist_name]
 
         # Called whenever we press the enter key
@@ -130,9 +126,14 @@ class GameWindow:
         playing = AudioSegment.from_mp3("cook.mp3")
         ten_seconds = 10 * 1000
         first_10_seconds = playing[:ten_seconds]
-        play(first_10_seconds)
+        #hasing out playing audio for now
+        #play(first_10_seconds)
         self.guess()
     
+    def play_next(self):
+       self.download_song()
+       self.play_audio()
+
     def deleting(self):
       try:
         os.remove("cook.mp3")
