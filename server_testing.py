@@ -13,6 +13,13 @@ class GameServer:
             client, addr = self.server.accept()
             self.clients.append(client)
             threading.Thread(target=self.handle_client, args=(client,)).start()
+    #psuedocode - not necccasary if enough time do??
+    def lobbies(self, host='localhost', port=8080):
+        #when the user connnects they get the option of joining or creating a lobby
+        j_c = input("Do you wish to join an existing lobby or create your own")
+        if j_C == "create":
+            #create a new server with https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number
+        
 
     def handle_client(self, client):
         while True:
