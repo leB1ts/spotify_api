@@ -55,19 +55,50 @@ class GameWindow:
       pre_genre = ""
 
       parameters_window = Toplevel()
+      parameters_window.geometry('300x200')
+      parameters_window.title('Choose one field to narow the game down or try a challenge of all random')
+
+      #need to do individualy where user chooses one or no metrics otherwise way too specific ie bob jazz 1975 is like one song for example
+
+      def continue_genre():
+        global query
+        query = genre_label.get()
+        genre_window.destroy()
+      def Genre():
+        global genre_window
+        genre_window = Toplevel()
+        genre_window.geometry('300x200')
+        global genre_label
+        genre_label = Label(genre_window, text="Genre")
+        genre_label.pack()
+        Button(genre_window, text="continue", command=continue_genre).pack()
+
+      def Artist():
+        artist_window = Toplevel()
+        artist_window.geometry('300x200')
+        Label(artist_window, text="Artist").pack()
+
+      def Year():
+        year_window = Toplevel()
+        year_window.geometry('300x200')
+        Label(year_window, text="Year").pack()
+
+      def Random():
+        random_window = Toplevel()
+        random_window.geometry('300x200')
+        Label(random_window, text="Random").pack()
+
+
+      Button(parameters_window, text="Genre",command=Genre).pack()
+
+      Button(parameters_window, text="Artist", command= Artist).pack()
+
+      Button(parameters_window, text="Year", command= Year).pack()
+
+      Button(parameters_window, text="Random", command= Random).pack()
+
 
       
-      Label(parameters_window, text="Genre (type 'random' for a random genre):").pack()
-      genre_entry = Entry(parameters_window)
-      genre_entry.pack()
-
-      Label(parameters_window, text="Artist (type 'random' for a random artist):").pack()
-      artist_entry = Entry(parameters_window)
-      artist_entry.pack()
-
-      Label(parameters_window, text="Year (type 'random' for a random year):").pack()
-      year_entry = Entry(parameters_window)
-      year_entry.pack()
 
       def enter_data():
         global offset
