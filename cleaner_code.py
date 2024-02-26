@@ -55,12 +55,9 @@ def login():
       return
     else:
       window2.destroy()
-      start_window = Toplevel()
-      start_window.geometry('500x300')  
-      start_window.title('Guess the artist or song')  
-      Button(start_window,text="Play Game",command=play_game).pack()
-      Button(start_window,text="stats",command=stats).pack()
-      Button(start_window,text='Close',command=start_window.destroy).pack()
+      #login successful
+      #now we can start the game
+      
   Button(window2,text='Login',command=try_login).pack()
 
 user_filepath = 'users.txt'
@@ -78,7 +75,7 @@ def generate_password():
 def password_message(password):
   #message to display the password
   window4 = Toplevel()
-  Label(window4,text='Your password is ' + password + '/nWrite it down to remember').pack()
+  Label(window4,text='Your password is ' + password + '\nWrite it down to remember').pack()
   Button(window4,text='Ok',command=window4.destroy).pack()
 
 #for security reasons, we need to hash the password

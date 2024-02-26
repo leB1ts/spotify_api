@@ -1,5 +1,7 @@
 import socket
 import threading
+import code_1
+
 
 class GameServer:
     def __init__(self, host='localhost', port=8080):
@@ -13,6 +15,7 @@ class GameServer:
             client, addr = self.server.accept()
             self.clients.append(client)
             threading.Thread(target=self.handle_client, args=(client,)).start()
+            
 
             
 
@@ -24,13 +27,10 @@ class GameServer:
                 break
             #game logic functions go here
             # For example, if data == 'play_next', call self.play_next()
-            def send_login():
-                #when the client connects send login on verified connnection
-                server.send(login())
+            if data == 'start_game':
+                code_1.self.start_game()
                 
-    def play_next(self):
-        pass
-
+   
 
 if __name__ == "__main__":
     server = GameServer()

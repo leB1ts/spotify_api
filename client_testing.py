@@ -1,5 +1,6 @@
 import socket
 from tkinter import Tk, Button
+import cleaner_code
 
 class GameClient:
     def __init__(self, host='localhost', port=8080):
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     app.geometry('300x200')
     app.title('Music Quiz ?')
     Button(app,text='Start Game',command=client.start_game).pack()
+    Button(app,text="login",command=cleaner_code.login_register).pack()
     Button(app,text='Play Next Song',command=client.play_next).pack()
     Button(app,text='Exit',command=app.destroy).pack()
     app.mainloop()

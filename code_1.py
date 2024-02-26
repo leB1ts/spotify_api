@@ -46,18 +46,53 @@ class GameWindow:
       spotdl = Spotdl(client_id,
                       client_secret)
 
-      # Grab ten random songs that are "metal", return their names
+      # Grab ten random songs and return their names
       offset = random.randint(0, 1000)
-      query = "genre:metal"
+      
+
+  # Add code here to use the queries
+
+      parameters_window = Toplevel()
+
+      Label(parameters_window, text="Genre (type 'random' for a random genre):").pack()
+      genre_entry = Entry(parameters_window)
+      genre_entry.pack()
+
+      Label(parameters_window, text="Artist (type 'random' for a random artist):").pack()
+      artist_entry = Entry(parameters_window)
+      artist_entry.pack()
+
+      Label(parameters_window, text="Year (type 'random' for a random year):").pack()
+      year_entry = Entry(parameters_window)
+      year_entry.pack()
+    
+      genre = genre_entry.get()
+      if genre == "random":
+        query1 = "genre:" + random.choice(["rock", "pop", "hip-hop", "country", "jazz", "classical", "metal"])
+      else:
+        query1 = "genre:" + genre
+
+      artist = artist_entry.get()
+      if artist != "random":
+        query2 = "artist:" + artist
+      else:
+        query2 = ""
+
+      year = year_entry.get()
+      if year != "random":
+        query3 = "year:" + year
+      else:
+        query3 = ""
+        
       track_urls = [[x["name"], x["external_urls"]["spotify"]]
-                    for x in spotify.search(query, offset=offset)["tracks"]["items"]]
+                    for x in spotify.search(query1,query2,query3, offset=offset)["tracks"]["items"]]
 
       # Search for the song
       print(track_urls)
       songs = spotdl.search(random.choice(track_urls))
 
       # Attempt to download the song
-      #results = spotdl.download_songs(songs)
+      
 
       song = spotdl.download(songs[0])
 
