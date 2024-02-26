@@ -47,13 +47,16 @@ class GameWindow:
                       client_secret)
 
       # Grab ten random songs and return their names
-      offset = random.randint(0, 1000)
+      
       
 
-  # Add code here to use the queries
+      pre_year = ""
+      pre_artist = ""
+      pre_genre = ""
 
       parameters_window = Toplevel()
 
+      
       Label(parameters_window, text="Genre (type 'random' for a random genre):").pack()
       genre_entry = Entry(parameters_window)
       genre_entry.pack()
@@ -65,35 +68,46 @@ class GameWindow:
       Label(parameters_window, text="Year (type 'random' for a random year):").pack()
       year_entry = Entry(parameters_window)
       year_entry.pack()
-    
-      genre = genre_entry.get()
-      if genre == "random":
-        query1 = "genre:" + random.choice(["rock", "pop", "hip-hop", "country", "jazz", "classical", "metal"])
-      else:
-        query1 = "genre:" + genre
 
-      artist = artist_entry.get()
-      if artist != "random":
-        query2 = "artist:" + artist
-      else:
-        query2 = ""
-
-      year = year_entry.get()
-      if year != "random":
-        query3 = "year:" + year
-      else:
-        query3 = ""
+      def enter_data():
+        global offset
+        offset = random.randint(0, 1000)
+        global pre_genre
+        pre_genre = str(genre_entry.get())
+        global pre_artist
+        pre_artist = str(artist_entry.get())
+        global pre_year
+        pre_year = str(year_entry.get())
+        parameters_window.destroy()
         
-      track_urls = [[x["name"], x["external_urls"]["spotify"]]
-                    for x in spotify.search(query1,query2,query3, offset=offset)["tracks"]["items"]]
+        genre = pre_genre
+        if genre == "random":
+          query1 = "genre:" + random.choice(["rock", "pop", "hip-hop", "country", "jazz", "classical", "metal"])
+        else:
+          query1 = "genre:" + genre
 
-      # Search for the song
-      print(track_urls)
-      songs = spotdl.search(random.choice(track_urls))
+        artist = pre_artist
+        if artist != "random":
+          query2 = "artist:" + artist
+        else:
+          query2 = ""
 
+        year = pre_year
+        if year != "random":
+          query3 = "year:" + year
+        else:
+          query3 = ""
+
+        global track_urls
+        track_urls = [[x["name"], x["external_urls"]["spotify"]]
+                    for x in spotify.search(query1, query2, query3, offset=offset)["tracks"]["items"]]
+
+      Button(parameters_window, text="Submit", command=enter_data).pack()
+
+      
       # Attempt to download the song
       
-
+      songs = spotdl.search(random.choice(track_urls))
       song = spotdl.download(songs[0])
 
       #find the song name of the mp3
