@@ -80,7 +80,7 @@ class GameWindow:
         genre_widnow.bind('<Return>', key_pressed)
         genre_window.grab_set()
 
-        genre = "genre:",genre_value
+        genre = "genre:"+genre_value
         track_urls = [[x["name"], x["external_urls"]["spotify"]]
                     for x in spotify.search(genre, offset=offset)["tracks"]["items"]]
 
@@ -106,7 +106,7 @@ class GameWindow:
         artist_widnow.bind('<Return>', key_pressed)
         artist_window.grab_set()
 
-        artist = "name:",artist_value,"type:artist"
+        artist = "name:"+artist_value+"type:artist"
         track_urls = [[x["name"], x["external_urls"]["spotify"]]
                     for x in spotify.search(artist, offset=offset)["tracks"]["items"]]
 
@@ -131,7 +131,7 @@ class GameWindow:
         artist_widnow.bind('<Return>', key_pressed)
         artist_window.grab_set()
 
-        year = "year:",year_value
+        year = "year:"+year_value
         track_urls = [[x["name"], x["external_urls"]["spotify"]]
                     for x in spotify.search(year, offset=offset)["tracks"]["items"]]
 
