@@ -57,31 +57,89 @@ class GameWindow:
       parameters_window = Toplevel()
       parameters_window.geometry('300x200')
       parameters_window.title('Choose one field to narow the game down or try a challenge of all random')
+      Button(parameters_window, text="Genre", command = the_genre).pack()
+      Button(parameters_window, text="Year", command = the_year).pack()
+      Button(parameters_window, text="Artist", command = the_artist).pack()
+      Button(parameters_window, text="All Random", command = all_random).pack()
+
 
       #need to do individualy where user chooses one or no metrics otherwise way too specific ie bob jazz 1975 is like one song for example
+      #https://medium.com/@maxtingle/getting-started-with-spotifys-api-spotipy-197c3dc6353b
+      def the_genre():
+        genre_window = Toplevel():
+        genre_window.geometery("300x200")
+        Label(genre_window, text="Choose a specific genre").pack()
+        genre_entry = Entry(genre_window)
+        genre_entry.pack()
+        # Called whenever we press the enter key
+        def key_pressed(key: tkinter.Event):
+          # Grab the user input
+          global genre_value
+          genre_value = str(genre_entry.get()).strip()
 
-      def continue_genre():
-        global query
-        query = genre_label.get()
-        genre_window.destroy()
-      def Genre():
-        global genre_window
-        genre_window = Toplevel()
-        genre_window.geometry('300x200')
-        global genre_label
-        genre_label = Label(genre_window, text="Genre")
-        genre_label.pack()
-        Button(genre_window, text="continue", command=continue_genre).pack()
+        genre_widnow.bind('<Return>', key_pressed)
+        genre_window.grab_set()
+
+        genre = "genre:",genre_value
+        track_urls = [[x["name"], x["external_urls"]["spotify"]]
+                    for x in spotify.search(genre, offset=offset)["tracks"]["items"]]
+
+        # Attempt to download the song
+      
+        songs = spotdl.search(random.choice(track_urls))
+        song = spotdl.download(songs[0])
+        #could create a thread to download the other 10 songs in the background instead of one then rerunning to get another
+
 
       def Artist():
         artist_window = Toplevel()
         artist_window.geometry('300x200')
-        Label(artist_window, text="Artist").pack()
+        Label(artist_window, text="Choose a specific Artist").pack()
+        artisit_entry = Entry(artist_window)
+        artisit_entry.pack()
+        # Called whenever we press the enter key
+        def key_pressed(key: tkinter.Event):
+          # Grab the user input
+          global artist_value
+          artist_value = str(artist_entry.get()).strip()
+
+        artist_widnow.bind('<Return>', key_pressed)
+        artist_window.grab_set()
+
+        artist = "name:",artist_value,"type:artist"
+        track_urls = [[x["name"], x["external_urls"]["spotify"]]
+                    for x in spotify.search(artist, offset=offset)["tracks"]["items"]]
+
+        # Attempt to download the song
+      
+        songs = spotdl.search(random.choice(track_urls))
+        song = spotdl.download(songs[0])
+        #could create a thread to download the other 10 songs in the background instead of one then rerunning to get another
 
       def Year():
         year_window = Toplevel()
         year_window.geometry('300x200')
-        Label(year_window, text="Year").pack()
+        Label(year_window, text="Enter a specific Year or a range/n i.e 1960-1969").pack()
+        year_entry = Entry(year_window)
+        year_entry.pack()
+        # Called whenever we press the enter key
+        def key_pressed(key: tkinter.Event):
+          # Grab the user input
+          global year_value
+          year_value = str(artist_entry.get()).strip()
+
+        artist_widnow.bind('<Return>', key_pressed)
+        artist_window.grab_set()
+
+        year = "year:",year_value
+        track_urls = [[x["name"], x["external_urls"]["spotify"]]
+                    for x in spotify.search(year, offset=offset)["tracks"]["items"]]
+
+        # Attempt to download the song
+      
+        songs = spotdl.search(random.choice(track_urls))
+        song = spotdl.download(songs[0])
+        #could create a thread to download the other 10 songs in the background instead of one then rerunning to get another
 
       def Random():
         random_window = Toplevel()
