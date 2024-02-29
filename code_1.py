@@ -23,6 +23,8 @@ from tkinter import (
 )
 import tkinter as tkinter
 
+
+
 load_dotenv()
 
 client_id = os.environ.get("SPOTIPY_CLIENT_ID")
@@ -194,6 +196,8 @@ class GameWindow:
           # Check their answer is within the answers array
           if value in answers:
             Label(self.window2, text="correct").pack()
+            #make a points system on client?
+
             
 
             # Clear the text they entered

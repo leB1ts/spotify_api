@@ -2,6 +2,8 @@ import socket
 from tkinter import Tk, Button
 import cleaner_code
 
+points = 0
+
 class GameClient:
     def __init__(self, host='localhost', port=8080):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,6 +19,10 @@ class GameClient:
     def play_next(self):
         # Send a message to the server to play the next song
         self.send('play_next')
+
+    def points(self):
+        self.send("update_points")
+
 
 if __name__ == "__main__":
     client = GameClient()

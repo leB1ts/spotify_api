@@ -29,6 +29,9 @@ class GameServer:
             # For example, if data == 'play_next', call self.play_next()
             if data == 'start_game':
                 code_1.self.start_game()
+            if data == "update_points":
+                #run update points system
+                pass
                 
    
 
