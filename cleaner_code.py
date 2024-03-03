@@ -18,6 +18,21 @@ from tkinter import (
 )
 import tkinter as tkinter
 
+import sqlite3
+#connect to the database
+conn = sqlite3.connect('users.db')
+cursor = conn.cursor()
+cursor.execute('''
+  CREATE TABLE IF NOT EXISTS users(
+    username TEXT PRIMARY KEY,
+    password TEXT
+  )
+''')
+conn.commit()
+
+
+
+
 def user_not_found_message():
   #message to display if the user is not found
   window5 = Toplevel()
@@ -86,40 +101,36 @@ def hash_password(password):
 
 def save_user(entered_username,password):
   hashed = hash_password(password)
-  #saves user information in the text file
-  with open(user_filepath,'a') as file:
-    file.write(f"{entered_username} {hashed}\n")
-  login()
+  #save the username and password to the database
+  try:
+    cursor.execute("INSERT INTO users (username, password) VALUES (?,?)",(entered_username,hashed))
+    conn.commit()
+  except sqlite3.IntegrityError:
+    username_exists_message()
+  else:
+    login()
 
 
 
 def repeat_username(username):
   #checking if the username is already in the database
-  try:
-    with open(user_filepath,'r') as file:
-      for line in file:
-        breaking = line.split()
-        if breaking[0] == username:
-          #username already exists
-          username_exists_message()
-          return True
-  except FileNotFoundError as error:
-    print(error)
+  cursor.execute('SELECT username FROM users WHERE username = ?', (username,))
+  if cursor.fetchone() is not None:
+      # Username already exists
+      username_exists_message()
+      return True
   return False
 
 
 def verify(username,password):
    #check if the username and password are correct from the database
-  with open(user_filepath,'r') as file:
-    for line in file:
-      breaking = line.split()
-      if breaking[0] == username:
-        hashed_password = breaking[1]
-        if hashed_password == hash_password(password):
-          #correct password
+  cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
+  result = cursor.fetchone()
+  if result is not None:
+      hashed_password = result[0]
+      if hashed_password == hash_password(password):
+          # Correct password
           return True
-        else:
-          return False
   return False
         
 def username_saving():
