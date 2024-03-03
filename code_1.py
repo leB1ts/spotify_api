@@ -23,7 +23,7 @@ from tkinter import (
 )
 import tkinter as tkinter
 
-
+points = 0
 
 load_dotenv()
 
@@ -72,7 +72,7 @@ class GameWindow:
         genre_window.grab_set()
 
     def the_artist(self):
-        offset = random.randint(0, 1000)
+        offset = random.randint(0, 50)
         artist_window = Toplevel()
         artist_window.geometry('300x200')
         Label(artist_window, text="Choose a specific Artist").pack()
@@ -83,7 +83,7 @@ class GameWindow:
           # Grab the user input
           global artist_value
           artist_value = str(artist_entry.get()).strip()
-          artist = "name:"+artist_value+"type:artist"
+          artist = "name:"+artist_value
           track_urls = [[x["name"], x["external_urls"]["spotify"]]
                     for x in spotify.search(artist, offset=offset)["tracks"]["items"]]
 
@@ -179,9 +179,21 @@ class GameWindow:
       os.rename(file,"cook.mp3")    
 
       #self.play_audio()
+    def countdown_timer(self):
+        global seconds
+        seconds = 20
+        #needs to a threads
+        while seconds > 0:
+            print(f"Time remaining: {seconds} seconds")
+            time.sleep(1)
+            seconds -= 1
 
     def guess(self):
+        #thread for countdown
+        thread = Thread(target=self.countdown_timer, daemon=False)
+
         Label(self.window2,text="Guess:").pack()
+        thread.start()
         value_entry = Entry(self.window2)
         value_entry.pack()
         # Define our answers
@@ -196,7 +208,7 @@ class GameWindow:
           # Check their answer is within the answers array
           if value in answers:
             Label(self.window2, text="correct").pack()
-            #make a points system on client?
+            points = points + seconds
 
             
 
@@ -210,7 +222,7 @@ class GameWindow:
 
         
         # Listen to when user presses enter
-        funcid = self.window2.bind("<Return>",key_pressed)
+        
 
         self.window2.bind('<Return>', key_pressed)
         self.window2.grab_set()
@@ -251,32 +263,3 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-# def game_over():
-#   deleting()
-#   windowend = Toplevel()
-#   windowend.geometry('500x300')
-#   windowend.title('Game Over')
-#   Label(windowend,text='Game Over').pack()
-#   Button(windowend,text='Exit',command=windowend.destroy).pack()
-
-
-
-# def play_audio_and_then_delay():
-#   play_audio()
-#   window2.after(5000, delayed_function)
-
-# def download_commmand():
-#   download_thread = Thread(target=download_song)
-#   download_thread.start()
-#   #wait for download to finish
-#   download_thread.join()
-#   #play the song
-#   #SCEW THE BACKGROUND TASK PLAY AUDIO THEN GUESS AFTER QUICK FIX MOVE ON
-#   thread = Thread(target=play_audio, daemon=False)
-#   thread.start()
-  
