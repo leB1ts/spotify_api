@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 from pydub.playback import play
 from threading import Thread
+import sqlite3
 
 from tkinter import (
   Toplevel,
@@ -24,6 +25,25 @@ from tkinter import (
 import tkinter as tkinter
 
 points = 0
+total_guesses = 0
+correct_guesses = 0
+
+
+#connect to the database
+conn = sqlite3.connect('users.db')
+cursor = conn.cursor()
+#add streaks maybe
+cursor.execute('''
+  CREATE TABLE IF NOT EXISTS users(
+    user ID INTEGER PRIMARY KEY,
+    best_genre TEXT,
+    best_artist TEXT,
+    best_year INTEGER,
+    best_points INTEGER
+    accuracy INTEGER 
+  )
+''')
+conn.commit()
 
 load_dotenv()
 
@@ -46,6 +66,12 @@ class GameWindow:
       Button(self.window2,text='Close',command=self.deleting).pack()
       Button(self.window2,text='Play',command=self.play_next).pack()
       
+    def show_stats(self):
+      stats_window = Toplevel()
+      stats_window.geometry('300x200')
+      stats_window.title('Stats')
+
+
     def the_genre(self):
         offset = random.randint(0, 1000)
         genre_window = Toplevel()
@@ -273,11 +299,31 @@ class GameWindow:
         def key_pressed(key: tkinter.Event):
           # Grab the user input
           value = str(value_entry.get()).strip()
+          total_guesses += 1
 
           # Check their answer is within the answers array
           if value in answers:
             Label(self.window2, text="correct").pack()
             points = points + seconds
+            correct_guesses += 1
+            accuracy = (correct_guesses/total_guesses)*100
+            #wrtie the genre to a text file
+            with open("genre.txt", "w") as f:
+              f.write(genre_value)
+            #for the most common value of the genre store it in the database
+            
+            #wrtie the artist to a text file
+            with open("artist.txt", "w") as f:
+              f.write(artist_value)
+            #wrtie the year to a text file
+            with open("year.txt", "w") as f:
+              f.write(year_value)
+            #send key info to stats page via sql
+            cursor.execute('''
+              INSERT INTO users(accuracy) VALUES(?,?,?,?,?)
+            '''(accuracy))
+            conn.commit()
+            
 
             
 
@@ -321,6 +367,8 @@ if __name__ == "__main__":
   app.title('Music Quiz ?')
   game_window = GameWindow()
   Button(app,text='Start Game',command=game_window.start_game).pack()
+  #stats page link to a new window
+  Button(app,text="Stats",command=game_window.show_stats).pack()
   Button(app,text='Exit',command=app.destroy).pack()
   app.mainloop()
   

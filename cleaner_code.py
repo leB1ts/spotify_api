@@ -8,6 +8,7 @@ import secrets
 import string
 import hashlib
 from getpass import getpass
+from datetime import date
 
 from tkinter import (
   Toplevel,
@@ -24,8 +25,10 @@ conn = sqlite3.connect('users.db')
 cursor = conn.cursor()
 cursor.execute('''
   CREATE TABLE IF NOT EXISTS users(
-    username TEXT PRIMARY KEY,
-    password TEXT
+    user ID INTEGER PRIMARY KEY,
+    username TEXT,
+    password TEXT,
+    date DATE
   )
 ''')
 conn.commit()
@@ -104,6 +107,8 @@ def save_user(entered_username,password):
   #save the username and password to the database
   try:
     cursor.execute("INSERT INTO users (username, password) VALUES (?,?)",(entered_username,hashed))
+    current_date = date.today()
+    cursor.execute("INSERT INTO users (date) VALUES (?)",(current_date))
     conn.commit()
   except sqlite3.IntegrityError:
     username_exists_message()
