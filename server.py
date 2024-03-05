@@ -1,6 +1,7 @@
 import socket
+
 serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serv.bind(('127.0.0.1', 6942))
+serv.bind(("127.0.0.1", 6942))
 serv.listen(5)
 print("Server is listening...")
 while True:
@@ -9,9 +10,10 @@ while True:
     from_client = ""
     while True:
         data = conn.recv(4096)
-        if not data: break
+        if not data:
+            break
         from_client += data.decode("utf-8")
         print(f"Received data: {from_client}")
         conn.send("I am SERVER\n".encode())
     conn.close()
-    print('client disconnected')
+    print("client disconnected")
