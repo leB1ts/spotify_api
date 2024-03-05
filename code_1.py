@@ -30,16 +30,16 @@ correct_guesses = 0
 
 
 #connect to the database
-conn = sqlite3.connect('users.db')
+conn = sqlite3.connect('users_client.db')
 cursor = conn.cursor()
 #add streaks maybe
 cursor.execute('''
-  CREATE TABLE IF NOT EXISTS users(
-    user ID INTEGER PRIMARY KEY,
+  CREATE TABLE IF NOT EXISTS stats(
+    user_id INTEGER PRIMARY KEY,
     best_genre TEXT,
     best_artist TEXT,
     best_year INTEGER,
-    best_points INTEGER
+    best_points INTEGER,
     accuracy INTEGER 
   )
 ''')
@@ -320,8 +320,8 @@ class GameWindow:
               f.write(year_value)
             #send key info to stats page via sql
             cursor.execute('''
-              INSERT INTO users(accuracy) VALUES(?,?,?,?,?)
-            '''(accuracy))
+              INSERT INTO stats(accuracy) VALUES(?)
+            ''', accuracy)
             conn.commit()
             
 

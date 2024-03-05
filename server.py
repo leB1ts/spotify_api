@@ -1,6 +1,6 @@
 import socket
 serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serv.bind(('127.0.0.1', 8080))
+serv.bind(('127.0.0.1', 6942))
 serv.listen(5)
 print("Server is listening...")
 while True:

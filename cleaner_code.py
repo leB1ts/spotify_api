@@ -21,11 +21,11 @@ import tkinter as tkinter
 
 import sqlite3
 #connect to the database
-conn = sqlite3.connect('users.db')
+conn = sqlite3.connect('users_client.db')
 cursor = conn.cursor()
 cursor.execute('''
   CREATE TABLE IF NOT EXISTS users(
-    user ID INTEGER PRIMARY KEY,
+    user_id INTEGER PRIMARY KEY,
     username TEXT,
     password TEXT,
     date DATE
@@ -79,7 +79,7 @@ def login():
   Button(window2,text='Login',command=try_login).pack()
 
 user_filepath = 'users.txt'
-special_keys = "!@#$%^&*()_+[]:;'\|,./<>?`~-="
+special_keys = "!@#$%^&*()_+[]:;'\\|,./<>?`~-="
 
 def generate_password():
   #generate a random password
@@ -106,9 +106,8 @@ def save_user(entered_username,password):
   hashed = hash_password(password)
   #save the username and password to the database
   try:
-    cursor.execute("INSERT INTO users (username, password) VALUES (?,?)",(entered_username,hashed))
     current_date = date.today()
-    cursor.execute("INSERT INTO users (date) VALUES (?)",(current_date))
+    cursor.execute("INSERT INTO users (username, password, date) VALUES (?,?,?)",(entered_username,hashed,current_date))
     conn.commit()
   except sqlite3.IntegrityError:
     username_exists_message()
