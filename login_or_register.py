@@ -45,7 +45,7 @@ def wrong_password_message():
     Button(window6, text="Ok", command=window6.destroy).pack()
 
 
-def login():
+def login(client):
     window2 = Toplevel()
     window2.geometry("300x200")
     window2.title("Login")
@@ -71,7 +71,9 @@ def login():
         else:
             window2.destroy()
             # login successful
-            # now we can start the game
+            #send message to server to say login was succesful
+            client.send("LOGIN_SUCCESSFUL")
+            
 
     Button(window2, text="Login", command=try_login).pack()
 
@@ -108,7 +110,7 @@ def hash_password(password):
     return hashed
 
 
-def save_user(entered_username, password):
+def save_user(entered_username, password, client):
     hashed = hash_password(password)
     # save the username and password to the database
     try:
@@ -121,7 +123,7 @@ def save_user(entered_username, password):
     except sqlite3.IntegrityError:
         username_exists_message()
     else:
-        login()
+        login(client)
 
 
 def repeat_username(username):
@@ -156,7 +158,7 @@ def username_saving():
         return entered_username
 
 
-def register():
+def register(client):
     window_register = Toplevel()
     window_register.geometry("300x200")
     window_register.title("Register")
@@ -171,7 +173,7 @@ def register():
     Button(
         window_register,
         text="continue",
-        command=lambda: [save_user(entered_username, password)],
+        command=lambda: [save_user(entered_username, password, client)],
     ).pack()
 
 
@@ -182,19 +184,22 @@ def username_exists_message():
     Button(window3, text="Ok", command=window3.destroy).pack()
 
 
-def login_register():
+def login_register(client):
     window = Toplevel()
     window.geometry("300x200")
     window.title("Login or register")
-    Button(window, text="Login", command=login).pack()
-    Button(window, text="Register", command=register).pack()
+    Button(window, text="Login", command=lambda: login(client)).pack()
+    Button(window, text="Register", command=lambda: register(client)).pack()
     Button(window, text="Exit", command=window.destroy).pack()
 
 
 if __name__ == "__main__":
+    from client_code import GameClient
+    client = GameClient()
+
     app = Tk()
     app.geometry("300x200")
     app.title("Music Quiz ?")
-    Button(app, text="Login", command=login_register).pack()
+    Button(app, text="Login", command=lambda: login_register(client)).pack()
     Button(app, text="Exit", command=app.destroy).pack()
     app.mainloop()

@@ -1,12 +1,14 @@
 import socket
 from tkinter import Tk, Button
 import cleaner_code
+import code_1
 
 points = 0
 
 
 class GameClient:
-    def __init__(self, host="localhost", port=6942):
+    def __init__(self, host="localhost", port=6942, game_window=code_1.GameWindow()):
+        self.game_window = game_window
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((host, port))
 
@@ -16,6 +18,7 @@ class GameClient:
     def start_game(self):
         # Send a message to the server to start the game
         self.send("start_game")
+        self.game_window.start_game()
 
     def play_next(self):
         # Send a message to the server to play the next song
