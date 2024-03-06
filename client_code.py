@@ -2,6 +2,7 @@
 import socket
 import login_or_register
 from tkinter import *
+import game
 
 class GameClient:
     def __init__(self, host="localhost", port=6942):
@@ -32,8 +33,8 @@ if __name__ == "__main__":
                 login_or_register.login_register(client)
             if data == "GAME_WINDOW":
                 print("Starting game window")
-                # Start the game window
-                pass
+                game_window = game.GameWindow()
+                game_window.start_game(client)
 
 
         root.after(100, check_for_data)  # Check for new data every 100 ms

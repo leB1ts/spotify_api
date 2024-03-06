@@ -32,6 +32,7 @@ class GameServer:
                     #open the game window
                     client.sendall("GAME_WINDOW".encode("utf-8"))
                 
+                
         except Exception as e:
             print(f"An error occurred: {e}")
             client.close()
