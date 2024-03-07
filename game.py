@@ -94,40 +94,40 @@ class GameWindow:
             # NEED A TRY AND EXCEPT FOR THE GENRE TO ACTUALLY EXIST
             genre = "genre:" + genre_value
             #how to send the genre to the server?
-            self.client.send(genre_value)
-            track_urls = [
-                [x["name"], x["external_urls"]["spotify"]]
-                for x in spotify.search(genre, offset=offset)["tracks"]["items"]
-            ]
+            self.client.send(genre)
+            #track_urls = [
+            #    [x["name"], x["external_urls"]["spotify"]]
+             #   for x in spotify.search(genre, offset=offset)["tracks"]["items"]
+            #]
 
             # Attempt to download the song
 
-            songs = spotdl.search(random.choice(track_urls))
-            song = spotdl.download(songs[0])
+            #songs = spotdl.search(random.choice(track_urls))
+            #song = spotdl.download(songs[0])
             # find the song name of the mp3
-            mp3_files = glob.glob("*.mp3")
-            print(mp3_files)
+            #mp3_files = glob.glob("*.mp3")
+            #print(mp3_files)
 
             # need to get the name without the [" "] so it can be played using playsound
-            song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
-            print(song_name)
+            #song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
+            #print(song_name)
 
-            file = mp3_files[0]
+            #file = mp3_files[0]
 
-            global track_name
-            global artist_name
+            #global track_name
+            #global artist_name
 
-            split = song_name.partition("-")
-            track_name = split[0]
-            artist = split[2]
-            artist_name = artist.partition(".")
-            artist_name = artist_name[0]
+            #split = song_name.partition("-")
+            #track_name = split[0]
+            #artist = split[2]
+            #artist_name = artist.partition(".")
+            #artist_name = artist_name[0]
 
-            print(track_name, artist_name)
+            #print(track_name, artist_name)
 
-            print(file)
+            #print(file)
 
-            os.rename(file, "cook.mp3")
+            #os.rename(file, "cook.mp3")
 
         # could create a thread to download the other 10 songs in the background instead of one then rerunning to get another
         genre_window.bind("<Return>", key_pressed)
