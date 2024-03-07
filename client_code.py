@@ -26,8 +26,11 @@ if __name__ == "__main__":
     client.client.setblocking(False)  # Set the socket to non-blocking mode
     root = Tk()
     root.withdraw()  # Hide the root window
+    global game_window
+    game_window = None
 
     def check_for_data():
+        global game_window
         data = client.receive()
         if data is not None:
             print(f"Received data: {data}")
@@ -38,6 +41,10 @@ if __name__ == "__main__":
                 print("Starting game window")
                 game_window = game.GameWindow()
                 game_window.start_game(client)
+            if data == "SONGS_DOWNLOADED":
+                print("starting game")
+                if game_window is not None:
+                    game_window.play_next()
 
 
         root.after(100, check_for_data)  # Check for new data every 100 ms

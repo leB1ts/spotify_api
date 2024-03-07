@@ -70,7 +70,7 @@ class GameWindow:
         self.window2.geometry("500x300")
         self.window2.title("Guess the artist or song")
         Button(self.window2, text="Close", command=self.deleting).pack()
-        Button(self.window2, text="Play", command=self.play_next).pack()
+        Button(self.window2, text="Play", command=self.download_song).pack()
 
     def show_stats(self):
         stats_window = Toplevel()
@@ -78,7 +78,7 @@ class GameWindow:
         stats_window.title("Stats")
 
     def the_genre(self):
-        offset = random.randint(0, 1000)
+        #offset = random.randint(0, 1000)
         genre_window = Toplevel()
         genre_window.geometry("300x200")
         Label(genre_window, text="Choose a specific genre").pack()
@@ -147,40 +147,41 @@ class GameWindow:
             global artist_value
             artist_value = str(artist_entry.get()).strip()
             artist = "name:" + artist_value
-            track_urls = [
-                [x["name"], x["external_urls"]["spotify"]]
-                for x in spotify.search(artist, offset=offset)["tracks"]["items"]
-            ]
+            self.client.send(artist)
+            #track_urls = [
+            #    [x["name"], x["external_urls"]["spotify"]]
+             #   for x in spotify.search(artist, offset=offset)["tracks"]["items"]
+            #]
 
             # Attempt to download the song
 
-            songs = spotdl.search(random.choice(track_urls))
-            song = spotdl.download(songs[0])
+            #songs = spotdl.search(random.choice(track_urls))
+            #song = spotdl.download(songs[0])
             # could create a thread to download the other 10 songs in the background instead of one then rerunning to get another
             # find the song name of the mp3
-            mp3_files = glob.glob("*.mp3")
-            print(mp3_files)
+            #mp3_files = glob.glob("*.mp3")
+            #print(mp3_files)
 
             # need to get the name without the [" "] so it can be played using playsound
-            song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
-            print(song_name)
+            #song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
+            #print(song_name)
 
-            file = mp3_files[0]
+            #file = mp3_files[0]
 
-            global track_name
-            global artist_name
+            #global track_name
+            #global artist_name
 
-            split = song_name.partition("-")
-            track_name = split[0]
-            artist = split[2]
-            artist_name = artist.partition(".")
-            artist_name = artist_name[0]
+            #split = song_name.partition("-")
+            #track_name = split[0]
+            #artist = split[2]
+            #artist_name = artist.partition(".")
+            #artist_name = artist_name[0]
 
-            print(track_name, artist_name)
+            #print(track_name, artist_name)
 
-            print(file)
+            #print(file)
 
-            os.rename(file, "cook.mp3")
+            #os.rename(file, "cook.mp3")
 
         artist_window.bind("<Return>", key_pressed)
         artist_window.grab_set()
@@ -201,39 +202,40 @@ class GameWindow:
             global year_value
             year_value = str(year_entry.get()).strip()
             year = "year:" + year_value
-            track_urls = [
-                [x["name"], x["external_urls"]["spotify"]]
-                for x in spotify.search(year, offset=offset)["tracks"]["items"]
-            ]
+            self.client.send(year)
+            #track_urls = [
+            #    [x["name"], x["external_urls"]["spotify"]]
+            #    for x in spotify.search(year, offset=offset)["tracks"]["items"]
+            #]
 
             # Attempt to download the song
 
-            songs = spotdl.search(random.choice(track_urls))
-            song = spotdl.download(songs[0])
+            #songs = spotdl.search(random.choice(track_urls))
+            #song = spotdl.download(songs[0])
             # find the song name of the mp3
-            mp3_files = glob.glob("*.mp3")
-            print(mp3_files)
+            #mp3_files = glob.glob("*.mp3")
+            #print(mp3_files)
 
             # need to get the name without the [" "] so it can be played using playsound
-            song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
-            print(song_name)
+            #song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
+            #print(song_name)
 
-            file = mp3_files[0]
+            #file = mp3_files[0]
 
-            global track_name
-            global artist_name
+            #global track_name
+            #global artist_name
 
-            split = song_name.partition("-")
-            track_name = split[0]
-            artist = split[2]
-            artist_name = artist.partition(".")
-            artist_name = artist_name[0]
+            #split = song_name.partition("-")
+            #track_name = split[0]
+            #artist = split[2]
+            #artist_name = artist.partition(".")
+            #artist_name = artist_name[0]
 
-            print(track_name, artist_name)
+            #print(track_name, artist_name)
 
-            print(file)
+            #print(file)
 
-            os.rename(file, "cook.mp3")
+            #os.rename(file, "cook.mp3")
 
             # could create a thread to download the other 10 songs in the background instead of one then rerunning to get another
 
@@ -241,58 +243,7 @@ class GameWindow:
         year_window.grab_set()
 
     def all_random(self):
-        offset = random.randint(0, 1000)
-        options = [
-            "pop",
-            "rock",
-            "rap",
-            "country",
-            "metal",
-            "hip-hop",
-            "indie",
-            "alternative",
-            "electronic",
-            "folk",
-            "blues",
-            "jazz",
-            "reggae",
-            "latin",
-            "classical",
-        ]
-        random_genre = random.choice(options)
-        print(random_genre)
-        genre = "genre:" + random_genre
-        track_urls = [
-            [x["name"], x["external_urls"]["spotify"]]
-            for x in spotify.search(genre, offset=offset)["tracks"]["items"]
-        ]
-        # Attempt to download the song
-        songs = spotdl.search(random.choice(track_urls))
-        song = spotdl.download(songs[0])
-        # find the song name of the mp3
-        mp3_files = glob.glob("*.mp3")
-        print(mp3_files)
-
-        # need to get the name without the [" "] so it can be played using playsound
-        song_name = mp3_files[0].replace("[", "").replace("]", "").replace(" ", "")
-        print(song_name)
-
-        file = mp3_files[0]
-
-        global track_name
-        global artist_name
-
-        split = song_name.partition("-")
-        track_name = split[0]
-        artist = split[2]
-        artist_name = artist.partition(".")
-        artist_name = artist_name[0]
-
-        print(track_name, artist_name)
-
-        print(file)
-
-        os.rename(file, "cook.mp3")
+        self.client.send("random")
 
     def download_song(self):
 
@@ -371,17 +322,25 @@ class GameWindow:
         self.window2.bind("<Return>", key_pressed)
         self.window2.grab_set()
 
-    def play_audio(self):
-        # playing = AudioSegment.from_mp3("cook.mp3")
-        # ten_seconds = 10 * 1000
-        # first_10_seconds = playing[:ten_seconds]
-        # hasing out playing audio for now
-        # play(first_10_seconds)
+    def play_audio(self, audio_file):
+        playing = AudioSegment.from_mp3(audio_file)
+        ten_seconds = 10 * 1000
+        first_10_seconds = playing[:ten_seconds]
+        play(first_10_seconds)
         self.guess()
 
+    def choose_random_mp3(self):
+        # Get a list of all MP3 files in the directory
+        # run as adminm if not work kms
+        mp3_files = glob.glob("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\*.mp3")
+        audio_file_ = random.choice(mp3_files)
+        return audio_file_
+    
     def play_next(self):
-        self.download_song()
-        # self.play_audio()
+        # choose the first song to play
+        audio_file = self.choose_random_mp3()
+        #guess bit here aswell
+        self.play_audio(audio_file)
 
     def deleting(self):
         try:

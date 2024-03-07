@@ -16,7 +16,8 @@ client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
 
 
 spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
-spotdl = Spotdl(client_id, client_secret)
+loop = asyncio.new_event_loop()
+spotdl = Spotdl(client_id, client_secret, loop=loop)
 
 class GameServer:
     def __init__(self, host="localhost", port=6942):
@@ -50,36 +51,160 @@ class GameServer:
                     #download the 10 songs from the genre
                     genre = data.split(":")[1]
                     print(f"Downloading songs for genre: {genre}")
-                    self.download_genre(genre)
+                    self.download_genre(genre, client)
+                if data.startswith("name:"):
+                    #download the song
+                    name = data.split(":")[1]
+                    print(f"Downloading song: {name}")
+                    self.download_name(name, client)
+                if data.startswith("year:"):
+                    #download the song
+                    year = data.split(":")[1]
+                    print(f"Downloading song from year: {year}")
+                    self.download_year(year, client)
+                if data.startswith("random"):
+                    #download a random genre
+                    print("Downloading random genre")
+                    self.random_genre(client)
 
                 
         except Exception as e:
             print(f"An error occurred: {e}")
             client.close()
     
-    def download_genre(self, genre):
+    def download_genre(self, genre, client):
+        #DOES BY SONGS OR ARITSTS WITH GENRE IN THE NAME
         #download 10 songs from the genre
         offset = random.randint(0, 100)
         if not genre or genre.isspace():
             print("No genre provided")
             return
         print(f"Offset: {offset} for genre: {genre}")
-        q = str(genre)
+        spotify_search_results = spotify.search(str(genre), offset=offset)["tracks"]["items"]
         track_urls = [
-                [x["name"], x["external_urls"]["spotify"]]
-                for x in spotify.search(q, offset=offset)["tracks"]["items"]
-            ]
-        i = 0
+            [x["name"], x["external_urls"]["spotify"]]
+            for x in spotify_search_results 
+        ]
+
+        asyncio.set_event_loop(loop)
+
+        # optional optimisation:
+        # use threading to download all the songs at once
         for track in track_urls:
-            songs = spotdl.search(track[0])
+            print(f"Searching for song: {track[0]}")
+
+            songs = spotdl.search(track)
+            print(f"Found songs: {songs}")
             
             try:
-                song = asyncio.run(spotdl.download(songs[0]))
-                i += 1
-                os.rename(song, "song"+str(i)+".mp3")
+                print(f"Downloading song: {songs[0]}")
+                #how to get the song name and artist from the song object
+                artist = songs[0].artist
+                name = songs[0].name
+                song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
+                
             except Exception as e:
                 print(f"An error occurred: {e}")
                 
+        client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
+
+
+
+    def download_name(self, name, client):
+        offset = random.randint(0, 100)
+        #download the song
+        if not name or name.isspace():
+            print("No name provided")
+            return
+        print(f"Searching for song: {name}")
+
+        songs = spotdl.search(name)
+        print(f"Found songs: {songs}")
+
+        spotify_search_results = spotify.search(str(name), offset=offset)["tracks"]["items"]
+        track_urls = [
+            [x["name"], x["external_urls"]["spotify"]]
+            for x in spotify_search_results
+        ]
+        asyncio.set_event_loop(loop)
+        for track in track_urls:
+            print(f"Searching for song: {track[0]}")
+
+            songs = spotdl.search(track)
+            print(f"Found songs: {songs}")
+            try:
+                print(f"Downloading song: {songs[0]}")
+                #how to get the song name and artist from the song object
+                artist = songs[0].artist
+                name = songs[0].name
+                song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
+            
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            
+        client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
+
+
+
+    def download_year(self, year, client):
+        offset = random.randint(0, 100)
+        if not year or year.isspace():
+            print("No year provided")
+            return
+        print(f"Offset: {offset} for year: {year}")
+
+        songs = spotdl.search(year)
+        print(f"Found songs: {songs}")
+
+        spotify_search_results = spotify.search(str(year), offset=offset)["tracks"]["items"]
+        track_urls = [
+            [x["name"], x["external_urls"]["spotify"]]
+            for x in spotify_search_results
+        ]
+        asyncio.set_event_loop(loop)
+        for track in track_urls:
+            print(f"Searching for song: {track[0]}")
+
+            songs = spotdl.search(track)
+            print(f"Found songs: {songs}")
+            try:
+                print(f"Downloading song: {songs[0]}")
+                #how to get the song name and artist from the song object
+                artist = songs[0].artist
+                name = songs[0].name
+                song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
+            
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+        client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
+
+    def random_genre(self, client):
+        options = [
+            "pop",
+            "rock",
+            "rap",
+            "country",
+            "metal",
+            "hip-hop",
+            "indie",
+            "alternative",
+            "electronic",
+            "folk",
+            "blues",
+            "jazz",
+            "reggae",
+            "latin",
+            "classical",
+        ]
+        random_genre = random.choice(options)
+        print(f"Random genre: {random_genre}")
+        self.download_genre(random_genre, client)
+
+
+
+
+
 if __name__ == "__main__":
     server = GameServer()
     server.start()
