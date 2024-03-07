@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotdl.utils.ffmpeg import download_ffmpeg
-
+import asyncio
 load_dotenv()
 
 client_id = os.environ.get("SPOTIPY_CLIENT_ID")
@@ -60,17 +60,26 @@ class GameServer:
     def download_genre(self, genre):
         #download 10 songs from the genre
         offset = random.randint(0, 100)
+        if not genre or genre.isspace():
+            print("No genre provided")
+            return
+        print(f"Offset: {offset} for genre: {genre}")
+        q = str(genre)
         track_urls = [
                 [x["name"], x["external_urls"]["spotify"]]
-                for x in Spotify.search(genre, offset=offset)["tracks"]["items"]
+                for x in spotify.search(q, offset=offset)["tracks"]["items"]
             ]
         i = 0
         for track in track_urls:
             songs = spotdl.search(track[0])
-            song = spotdl.download_song(songs[0])
-            i += 1
-            os.rename(song, "song"+i+".mp3")
-
+            
+            try:
+                song = asyncio.run(spotdl.download(songs[0]))
+                i += 1
+                os.rename(song, "song"+str(i)+".mp3")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                
 if __name__ == "__main__":
     server = GameServer()
     server.start()

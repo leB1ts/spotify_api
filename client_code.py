@@ -14,7 +14,10 @@ class GameClient:
 
     def receive(self):
         try:
-            return self.client.recv(4096).decode("utf-8")
+            data = self.client.recv(4096)
+            if not data:
+                return None
+            return data.decode("utf-8")
         except BlockingIOError:
             return None
 
