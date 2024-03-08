@@ -49,18 +49,18 @@ class GameServer:
                     client.sendall("GAME_WINDOW".encode("utf-8"))
                 if data.startswith("genre:"):
                     #download the 10 songs from the genre
-                    genre = data.split(":")[1]
-                    print(f"Downloading songs for genre: {genre}")
+                    genre = data
+                    print(f"Downloading songs for {genre}")
                     self.download_genre(genre, client)
                 if data.startswith("name:"):
                     #download the song
-                    name = data.split(":")[1]
-                    print(f"Downloading song: {name}")
+                    name = data
+                    print(f"Downloading {name}")
                     self.download_name(name, client)
                 if data.startswith("year:"):
                     #download the song
-                    year = data.split(":")[1]
-                    print(f"Downloading song from year: {year}")
+                    year = data
+                    print(f"Downloading song from {year}")
                     self.download_year(year, client)
                 if data.startswith("random"):
                     #download a random genre
@@ -73,6 +73,7 @@ class GameServer:
             client.close()
     
     def download_genre(self, genre, client):
+        i = 0
         #DOES BY SONGS OR ARITSTS WITH GENRE IN THE NAME
         #download 10 songs from the genre
         offset = random.randint(0, 100)
@@ -95,6 +96,7 @@ class GameServer:
 
             songs = spotdl.search(track)
             print(f"Found songs: {songs}")
+            i += 1
             
             try:
                 print(f"Downloading song: {songs[0]}")
@@ -102,7 +104,7 @@ class GameServer:
                 artist = songs[0].artist
                 name = songs[0].name
                 song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-                
+                os.rename(song, "cook"+i+".mp3")
             except Exception as e:
                 print(f"An error occurred: {e}")
                 
@@ -111,6 +113,7 @@ class GameServer:
 
 
     def download_name(self, name, client):
+        i = 0
         offset = random.randint(0, 100)
         #download the song
         if not name or name.isspace():
@@ -129,7 +132,7 @@ class GameServer:
         asyncio.set_event_loop(loop)
         for track in track_urls:
             print(f"Searching for song: {track[0]}")
-
+            i += 1
             songs = spotdl.search(track)
             print(f"Found songs: {songs}")
             try:
@@ -138,7 +141,7 @@ class GameServer:
                 artist = songs[0].artist
                 name = songs[0].name
                 song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-            
+                os.rename(song, "cook"+i+".mp3")
             except Exception as e:
                 print(f"An error occurred: {e}")
             
@@ -147,6 +150,7 @@ class GameServer:
 
 
     def download_year(self, year, client):
+        i = 0
         offset = random.randint(0, 100)
         if not year or year.isspace():
             print("No year provided")
@@ -164,7 +168,7 @@ class GameServer:
         asyncio.set_event_loop(loop)
         for track in track_urls:
             print(f"Searching for song: {track[0]}")
-
+            i += 1
             songs = spotdl.search(track)
             print(f"Found songs: {songs}")
             try:
@@ -173,7 +177,7 @@ class GameServer:
                 artist = songs[0].artist
                 name = songs[0].name
                 song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-            
+                os.rename(song, "cook"+i+".mp3")
             except Exception as e:
                 print(f"An error occurred: {e}")
 
