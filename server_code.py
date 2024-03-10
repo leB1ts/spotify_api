@@ -104,7 +104,7 @@ class GameServer:
                 artist = songs[0].artist
                 name = songs[0].name
                 song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-                os.rename(song, "cook"+i+".mp3")
+                
             except Exception as e:
                 print(f"An error occurred: {e}")
                 
@@ -149,7 +149,7 @@ class GameServer:
                         song = spotdl.download(songs[i])
                         break
                 # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-                os.rename(song, "cook"+i+".mp3")
+                
             except Exception as e:
                 print(f"An error occurred: {e}")
             
@@ -185,7 +185,7 @@ class GameServer:
                 artist = songs[0].artist
                 name = songs[0].name
                 song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-                os.rename(song, "cook"+i+".mp3")
+                
             except Exception as e:
                 print(f"An error occurred: {e}")
 

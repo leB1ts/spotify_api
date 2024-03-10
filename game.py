@@ -21,6 +21,8 @@ import re
 from tkinter import Toplevel, Label, Button, Entry, Tk
 import tkinter as tkinter
 
+# global variables
+global points
 points = 0
 global total_guesses
 total_guesses = 0
@@ -341,21 +343,27 @@ class GameWindow:
         funcid = None
         file_name = os.path.basename(audio_file)
         split = file_name.partition("-")
-        track_name = split[2]
+        track_name, _ = os.path.splitext(split[2])
         artist_name = split[0]
-        print(track_name, artist_name)
+        
+        
+
+        
         answers = [track_name, artist_name]
 
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
             # Grab the user input
             value = str(value_entry.get()).strip()
+            print(value)
+            print(answers)
             global total_guesses
             total_guesses += 1
 
             # Check their answer is within the answers array
             if value in answers:
                 Label(guess_window, text="correct").pack()
+                global points
                 points = points + seconds
                 global correct_guesses
                 correct_guesses += 1
@@ -399,14 +407,33 @@ class GameWindow:
         threading.Thread(target=play, args=(first_10_seconds,)).start()
 
         self.guess(audio_file)
+        # delete the song after it has been played and move onto the next song
+        self.deleting()
+        self.next()
+
+    def next(self):
+        self.play_next()
 
     def choose_random_mp3(self):
         # Get a list of all MP3 files in the directory
-        # run as adminm if not work kms
-        mp3_files = glob.glob("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\*.mp3")
-        audio_file_ = random.choice(mp3_files)
-        return audio_file_
+        try:
+            mp3_files = glob.glob("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\*.mp3")
+            audio_file_ = random.choice(mp3_files)
+            return audio_file_
+        except:
+            print("No mp3 files found")
+            self.game_over()
     
+    def game_over(self):
+        game_over_window = Toplevel()
+        game_over_window.geometry("300x200")
+        game_over_window.title("Game Over")
+        Label(game_over_window, text="Game Over").pack()
+        Label(game_over_window, text=f"Points:{points}").pack()
+        Label(game_over_window, text=f"Correct Guesses:{correct_guesses}").pack()
+        Label(game_over_window, text=f"Total Guesses:{total_guesses}").pack()
+        Button(game_over_window, text="Play Again", command=self.playing_game).pack()
+
     def play_next(self):
         # choose the first song to play
         audio_file = self.choose_random_mp3()
@@ -414,13 +441,13 @@ class GameWindow:
         threading.Thread(target=self.play_audio, args=(audio_file,)).start()
         
 
-    def deleting(self):
+    def deleting(self, audio_file):
         try:
-            os.remove("cook.mp3")
+            os.remove(audio_file)
         except OSError as e:
-            print(f"Error: {e.strerror}. File cook.mp3 could not be removed.")
+            print(f"Error: {e.strerror}. File could not be removed.")
 
-    # Rest of your functions...
+    
 
 
 if __name__ == "__main__":
