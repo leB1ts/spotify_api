@@ -66,6 +66,7 @@ class GameWindow:
         self.client = None
         self.first_window = None
         self.window2 = None
+        self.guess_window = None
         self.genre_window = None
         self.artist_window = None
         self.year_window = None
@@ -89,6 +90,11 @@ class GameWindow:
         Button(self.first_window, text="Exit", command=self.first_window.destroy).pack()
 
     def playing_game(self):
+        if self.window2:
+            self.window2.lift()
+            print("Lifted window")
+            return
+        
         self.window2 = Toplevel()
         self.window2.geometry("500x300")
         self.window2.title("Guess the artist or song")
@@ -344,6 +350,7 @@ class GameWindow:
 
     def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year):
         guess_window = Toplevel()
+        self.guess_window = guess_window
         guess_window.geometry("300x200")
         guess_window.title("Guess the song or artist")
 
@@ -380,7 +387,7 @@ class GameWindow:
             total_guesses += 1
 
             # Check their answer is within the answers array
-            if value == l or value == r:
+            if value.lower() == l.lower() or value.lower() == r.lower():
                 Label(guess_window, text="correct").pack()
                 global points
                 points = points + seconds
@@ -422,18 +429,20 @@ class GameWindow:
         guess_window.bind("<Return>", key_pressed)
         guess_window.grab_set()
 
+        return thread
+
     def play_audio(self, audio_file,audio_file_, save_genre, save_artist, save_year):
         playing = AudioSegment.from_mp3(audio_file)
         ten_seconds = 10 * 1000
         first_10_seconds = playing[:ten_seconds]
         threading.Thread(target=play, args=(first_10_seconds,)).start()
 
-        self.guess(audio_file, audio_file_, save_genre, save_artist, save_year)
+        return self.guess(audio_file, audio_file_, save_genre, save_artist, save_year)
         
     def deleting_next(self, audio_file_):
         # delete the song after it has been played and move onto the next song
         self.deleting(audio_file_)
-        self.next(audio_file_)
+        
 
 
     def next(self, audio_file_):
@@ -451,7 +460,9 @@ class GameWindow:
 
 
             return audio_file_, save_genre, save_artist, save_year
-        except:
+        
+        except Exception as e:
+            print(f"An error occurred: {e}")
             print("No mp3 files found")
             self.game_over()
             return None, None, None, None
@@ -459,6 +470,9 @@ class GameWindow:
 
     
     def game_over(self):
+        if self.guess_window is not None:
+            self.guess_window.destroy()
+
         game_over_window = Toplevel()
         game_over_window.geometry("300x200")
         game_over_window.title("Game Over")
@@ -473,12 +487,15 @@ class GameWindow:
         audio_file, save_genre, save_artist, save_year = self.choose_random_mp3(audio_file_)
 
         #guess bit here as well
-        threading.Thread(target=self.play_audio, args=(audio_file, audio_file_, save_genre, save_artist, save_year)).start()
+        return self.play_audio(audio_file, audio_file_, save_genre, save_artist, save_year)
+        # threading.Thread(target=self.play_audio, args=(audio_file, audio_file_, save_genre, save_artist, save_year)).start()
 
     def deleting(self, audio_file_):
+        if audio_file_ is None:
+            return
+        
         try:
             print(f"Removing {audio_file_}")
-            
             os.remove(audio_file_)
         except OSError as e:
             print(f"Error: {e.strerror}. File could not be removed.")

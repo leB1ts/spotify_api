@@ -5,6 +5,7 @@ from tkinter import *
 import game
 import glob
 import random
+import threading
 
 class GameClient:
     def __init__(self, host="localhost", port=6942):
@@ -31,6 +32,17 @@ if __name__ == "__main__":
     global game_window
     game_window = None
 
+    def run_game(mp3_files):
+        for audio_file_ in mp3_files:
+            # need to get rid of everything but relative path
+            audio_file_ = audio_file_.replace("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\", "")
+            print(audio_file_)
+            #make a blocking threa
+            game_window.play_next(audio_file_).join()
+    
+        # everything is done, show game over here.
+        game_window.game_over()
+
     def check_for_data():
         global game_window
         data = client.receive()
@@ -48,8 +60,9 @@ if __name__ == "__main__":
                 print("starting game")
                 if game_window is not None:
                     mp3_files = glob.glob("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\*.mp3")
-                    audio_file_ = random.choice(mp3_files)
-                    game_window.play_next(audio_file_)
+                    random.shuffle(mp3_files)
+
+                    threading.Thread(target=run_game, args=(mp3_files,)).start()
 
         root.after(100, check_for_data)  # Check for new data every 100 ms
 

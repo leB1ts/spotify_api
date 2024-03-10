@@ -81,7 +81,7 @@ class GameServer:
             print("No genre provided")
             return
         print(f"Offset: {offset} for genre: {genre}")
-        spotify_search_results = spotify.search(str(genre), offset=offset)["tracks"]["items"]
+        spotify_search_results = spotify.search(str(genre), offset=offset, limit=1)["tracks"]["items"]
         track_urls = [
             [x["name"], x["external_urls"]["spotify"]]
             for x in spotify_search_results 
