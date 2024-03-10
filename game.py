@@ -12,14 +12,19 @@ import time
 from dotenv import load_dotenv
 from pydub import AudioSegment
 from pydub.playback import play
-from threading import Thread
+import threading
 import sqlite3
+from collections import Counter
+import re
+
 
 from tkinter import Toplevel, Label, Button, Entry, Tk
 import tkinter as tkinter
 
 points = 0
+global total_guesses
 total_guesses = 0
+global correct_guesses
 correct_guesses = 0
 
 
@@ -51,6 +56,8 @@ spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
 spotdl = Spotdl(client_id, client_secret)
 
 
+
+
 class GameWindow:
     def __init__(self):
         pass
@@ -76,6 +83,58 @@ class GameWindow:
         stats_window = Toplevel()
         stats_window.geometry("300x200")
         stats_window.title("Stats")
+        # get the best genre from the text file
+        def most_common_genre():
+            with open("genre.txt", "r") as f:
+                genre = f.read()
+            words = re.findall(r'\w+', genre.lower())
+            most_common_genre = Counter(words).most_common(1)
+            return most_common_genre[0] if most_common_genre else None
+        highest_genre = most_common_genre()
+        
+        def most_common_year():
+            with open("year.txt", "r") as f:
+                year = f.read()
+            words = re.findall(r'\w+', year.lower())
+            most_common_year = Counter(words).most_common(1)
+            return most_common_year[0] if most_common_year else None   
+        highest_year = most_common_year()
+        
+        def most_common_artist():
+            with open("artist.txt", "r") as f:
+                artist = f.read()
+            words = re.findall(r'\w+', artist.lower())
+            most_common_artist = Counter(words).most_common(1)
+            return most_common_artist[0] if most_common_artist else None  
+        highest_artist = most_common_artist()
+        
+        #send the highest genre, year and artist to the database
+        cursor.execute(
+              "INSERT INTO stats(best_genre, best_artist, best_year) VALUES(?,?,?)",
+                    (highest_genre, highest_artist, highest_year),
+                )
+        conn.commit()
+        # get the highest points from the database
+        cursor.execute("SELECT best_artist FROM stats")
+        best_artist = cursor.fetchone()
+        # get the highest accuracy from the database
+        cursor.execute("SELECT accuracy FROM stats")
+        accuracy = cursor.fetchone()
+        # get the highest genre from the database
+        cursor.execute("SELECT best_genre FROM stats")
+        highest_genre = cursor.fetchone()
+        #get the highest year from the database
+        cursor.execute("SELECT best_year FROM stats")
+        highest_year = cursor.fetchone()
+        # display the highest genre, year, artist, points and accuracy
+        Label(stats_window, text=f"Best Genre: {highest_genre}").pack()
+        Label(stats_window, text=f"Best Artist: {best_artist}").pack()
+        Label(stats_window, text=f"Best Year: {highest_year}").pack()
+        Label(stats_window, text=f"Accuracy: {accuracy}").pack()
+        
+        
+
+
 
     def the_genre(self):
         #offset = random.randint(0, 1000)
@@ -266,28 +325,39 @@ class GameWindow:
             time.sleep(1)
             seconds -= 1
 
-    def guess(self):
-        # thread for countdown
-        thread = Thread(target=self.countdown_timer, daemon=False)
+    def guess(self, audio_file):
+        guess_window = Toplevel()
+        guess_window.geometry("300x200")
+        guess_window.title("Guess the song or artist")
 
-        Label(self.window2, text="Guess:").pack()
+        # thread for countdown
+        thread = threading.Thread(target=self.countdown_timer, daemon=False)
+
+        Label(guess_window, text="Guess:").pack()
         thread.start()
-        value_entry = Entry(self.window2)
+        value_entry = Entry(guess_window)
         value_entry.pack()
         # Define our answers
         funcid = None
+        file_name = os.path.basename(audio_file)
+        split = file_name.partition("-")
+        track_name = split[2]
+        artist_name = split[0]
+        print(track_name, artist_name)
         answers = [track_name, artist_name]
 
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
             # Grab the user input
             value = str(value_entry.get()).strip()
+            global total_guesses
             total_guesses += 1
 
             # Check their answer is within the answers array
             if value in answers:
-                Label(self.window2, text="correct").pack()
+                Label(guess_window, text="correct").pack()
                 points = points + seconds
+                global correct_guesses
                 correct_guesses += 1
                 accuracy = (correct_guesses / total_guesses) * 100
                 # wrtie the genre to a text file
@@ -315,19 +385,20 @@ class GameWindow:
             else:
                 # Clear the text they entered
                 value_entry.delete(0, tkinter.END)
-                Label(self.window2, text="incorrect").pack()
+                Label(guess_window, text="incorrect").pack()
 
         # Listen to when user presses enter
 
-        self.window2.bind("<Return>", key_pressed)
-        self.window2.grab_set()
+        guess_window.bind("<Return>", key_pressed)
+        guess_window.grab_set()
 
     def play_audio(self, audio_file):
         playing = AudioSegment.from_mp3(audio_file)
         ten_seconds = 10 * 1000
         first_10_seconds = playing[:ten_seconds]
-        play(first_10_seconds)
-        self.guess()
+        threading.Thread(target=play, args=(first_10_seconds,)).start()
+
+        self.guess(audio_file)
 
     def choose_random_mp3(self):
         # Get a list of all MP3 files in the directory
@@ -340,7 +411,8 @@ class GameWindow:
         # choose the first song to play
         audio_file = self.choose_random_mp3()
         #guess bit here aswell
-        self.play_audio(audio_file)
+        threading.Thread(target=self.play_audio, args=(audio_file,)).start()
+        
 
     def deleting(self):
         try:

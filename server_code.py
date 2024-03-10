@@ -120,6 +120,7 @@ class GameServer:
             print("No name provided")
             return
         print(f"Searching for song: {name}")
+        artist_r = name.split(":")[1]
 
         songs = spotdl.search(name)
         print(f"Found songs: {songs}")
@@ -131,16 +132,23 @@ class GameServer:
         ]
         asyncio.set_event_loop(loop)
         for track in track_urls:
-            print(f"Searching for song: {track[0]}")
+            print(f"Searching for song: {track}")
             i += 1
             songs = spotdl.search(track)
+            
+
             print(f"Found songs: {songs}")
             try:
                 print(f"Downloading song: {songs[0]}")
                 #how to get the song name and artist from the song object
                 artist = songs[0].artist
                 name = songs[0].name
-                song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
+                
+                for i in range(len(songs)):
+                    if songs[i].artist == artist_r:
+                        song = spotdl.download(songs[i])
+                        break
+                # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
                 os.rename(song, "cook"+i+".mp3")
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -160,7 +168,7 @@ class GameServer:
         songs = spotdl.search(year)
         print(f"Found songs: {songs}")
 
-        spotify_search_results = spotify.search(str(year), offset=offset)["tracks"]["items"]
+        spotify_search_results = spotify.search(year, offset=offset)["tracks"]["items"]
         track_urls = [
             [x["name"], x["external_urls"]["spotify"]]
             for x in spotify_search_results
