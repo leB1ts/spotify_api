@@ -156,7 +156,7 @@ class GameServer:
         client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
 
 
-
+    # doesnt work correctly
     def download_year(self, year, client):
         i = 0
         offset = random.randint(0, 100)
@@ -167,6 +167,8 @@ class GameServer:
 
         songs = spotdl.search(year)
         print(f"Found songs: {songs}")
+
+        year_r = year.split(":")[1]
 
         spotify_search_results = spotify.search(year, offset=offset)["tracks"]["items"]
         track_urls = [
@@ -184,8 +186,10 @@ class GameServer:
                 #how to get the song name and artist from the song object
                 artist = songs[0].artist
                 name = songs[0].name
-                song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
-                
+                for i in range(len(songs)):
+                    if songs[i].year == year_r:
+                        song = spotdl.download(songs[i])
+                        break
             except Exception as e:
                 print(f"An error occurred: {e}")
 

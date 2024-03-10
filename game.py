@@ -16,6 +16,7 @@ import threading
 import sqlite3
 from collections import Counter
 import re
+from tinytag import TinyTag
 
 
 from tkinter import Toplevel, Label, Button, Entry, Tk
@@ -62,7 +63,20 @@ spotdl = Spotdl(client_id, client_secret)
 
 class GameWindow:
     def __init__(self):
-        pass
+        self.client = None
+        self.first_window = None
+        self.window2 = None
+        self.genre_window = None
+        self.artist_window = None
+        self.year_window = None
+        self.parameters_window = None
+        self.game_over_window = None
+        self.stats_window = None
+        self.audio_file_ = None
+        self.audio_file = None
+        self.genre_value = None
+        self.artist_value = None
+        self.year_value = None
 
     def start_game(self, client):
         self.client = client
@@ -318,7 +332,7 @@ class GameWindow:
         Button(parameters_window, text="Artist", command=self.the_artist).pack()
         Button(parameters_window, text="All Random", command=self.all_random).pack()
 
-    def countdown_timer(self):
+    def countdown_timer(self, audio_file_):
         global seconds
         seconds = 20
         # needs to a threads
@@ -326,14 +340,15 @@ class GameWindow:
             print(f"Time remaining: {seconds} seconds")
             time.sleep(1)
             seconds -= 1
+        self.deleting_next(audio_file_)
 
-    def guess(self, audio_file):
+    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year):
         guess_window = Toplevel()
         guess_window.geometry("300x200")
         guess_window.title("Guess the song or artist")
 
         # thread for countdown
-        thread = threading.Thread(target=self.countdown_timer, daemon=False)
+        thread = threading.Thread(target=self.countdown_timer, args=(self.deleting_next(audio_file_),), daemon=False)
 
         Label(guess_window, text="Guess:").pack()
         thread.start()
@@ -346,11 +361,15 @@ class GameWindow:
         track_name, _ = os.path.splitext(split[2])
         artist_name = split[0]
         
+        print(track_name+"+"+artist_name)
+        
+        
         
 
         
         answers = [track_name, artist_name]
-
+        l = answers[0].lstrip()
+        r = answers[1].rstrip()
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
             # Grab the user input
@@ -361,7 +380,7 @@ class GameWindow:
             total_guesses += 1
 
             # Check their answer is within the answers array
-            if value in answers:
+            if value == l or value == r:
                 Label(guess_window, text="correct").pack()
                 global points
                 points = points + seconds
@@ -370,21 +389,24 @@ class GameWindow:
                 accuracy = (correct_guesses / total_guesses) * 100
                 # wrtie the genre to a text file
                 with open("genre.txt", "w") as f:
-                    f.write(genre_value)
+                    
+                    f.write(save_genre)
                 # for the most common value of the genre store it in the database
 
                 # wrtie the artist to a text file
                 with open("artist.txt", "w") as f:
-                    f.write(artist_value)
+                    
+                    f.write(save_artist)
                 # wrtie the year to a text file
                 with open("year.txt", "w") as f:
-                    f.write(year_value)
+                    
+                    f.write(str(save_year))
                 # send key info to stats page via sql
                 cursor.execute(
-                    """
-              INSERT INTO stats(accuracy) VALUES(?)
-            """,
-                    accuracy,
+                """
+                INSERT INTO stats(accuracy) VALUES(?)
+                """,
+                    (accuracy,),
                 )
                 conn.commit()
 
@@ -400,29 +422,41 @@ class GameWindow:
         guess_window.bind("<Return>", key_pressed)
         guess_window.grab_set()
 
-    def play_audio(self, audio_file):
+    def play_audio(self, audio_file,audio_file_, save_genre, save_artist, save_year):
         playing = AudioSegment.from_mp3(audio_file)
         ten_seconds = 10 * 1000
         first_10_seconds = playing[:ten_seconds]
         threading.Thread(target=play, args=(first_10_seconds,)).start()
 
-        self.guess(audio_file)
+        self.guess(audio_file, audio_file_, save_genre, save_artist, save_year)
+        
+    def deleting_next(self, audio_file_):
         # delete the song after it has been played and move onto the next song
-        self.deleting()
-        self.next()
+        self.deleting(audio_file_)
+        self.next(audio_file_)
 
-    def next(self):
-        self.play_next()
 
-    def choose_random_mp3(self):
+    def next(self, audio_file_):
+        self.play_next(audio_file_)
+
+    def choose_random_mp3(self, audio_file_):
         # Get a list of all MP3 files in the directory
         try:
-            mp3_files = glob.glob("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\*.mp3")
-            audio_file_ = random.choice(mp3_files)
-            return audio_file_
+            
+            
+            tag = TinyTag.get(audio_file_)
+            save_genre = tag.genre
+            save_artist = tag.artist
+            save_year = tag.year
+
+
+            return audio_file_, save_genre, save_artist, save_year
         except:
             print("No mp3 files found")
             self.game_over()
+            return None, None, None, None
+            
+
     
     def game_over(self):
         game_over_window = Toplevel()
@@ -434,16 +468,18 @@ class GameWindow:
         Label(game_over_window, text=f"Total Guesses:{total_guesses}").pack()
         Button(game_over_window, text="Play Again", command=self.playing_game).pack()
 
-    def play_next(self):
+    def play_next(self, audio_file_):
         # choose the first song to play
-        audio_file = self.choose_random_mp3()
-        #guess bit here aswell
-        threading.Thread(target=self.play_audio, args=(audio_file,)).start()
-        
+        audio_file, save_genre, save_artist, save_year = self.choose_random_mp3(audio_file_)
 
-    def deleting(self, audio_file):
+        #guess bit here as well
+        threading.Thread(target=self.play_audio, args=(audio_file, audio_file_, save_genre, save_artist, save_year)).start()
+
+    def deleting(self, audio_file_):
         try:
-            os.remove(audio_file)
+            print(f"Removing {audio_file_}")
+            
+            os.remove(audio_file_)
         except OSError as e:
             print(f"Error: {e.strerror}. File could not be removed.")
 

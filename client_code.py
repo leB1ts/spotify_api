@@ -3,6 +3,8 @@ import socket
 import login_or_register
 from tkinter import *
 import game
+import glob
+import random
 
 class GameClient:
     def __init__(self, host="localhost", port=6942):
@@ -41,11 +43,13 @@ if __name__ == "__main__":
                 print("Starting game window")
                 game_window = game.GameWindow()
                 game_window.start_game(client)
+            
             if data == "SONGS_DOWNLOADED":
                 print("starting game")
                 if game_window is not None:
-                    game_window.play_next()
-
+                    mp3_files = glob.glob("C:\\Users\\wiloj\\Documents\\GitHub\\Project\\spotify_api\\*.mp3")
+                    audio_file_ = random.choice(mp3_files)
+                    game_window.play_next(audio_file_)
 
         root.after(100, check_for_data)  # Check for new data every 100 ms
 
