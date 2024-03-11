@@ -103,7 +103,7 @@ class GameServer:
                 #how to get the song name and artist from the song object
                 artist = songs[0].artist
                 name = songs[0].name
-                song = spotdl.download(songs[0]) # if doesnt work, try loop.run_until_complete(spotdl.download(songs[0]))
+                song = spotdl.download(songs[0]) 
                 
             except Exception as e:
                 print(f"An error occurred: {e}")

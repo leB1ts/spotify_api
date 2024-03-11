@@ -110,8 +110,10 @@ class GameWindow:
             with open("genre.txt", "r") as f:
                 genre = f.read()
             words = re.findall(r'\w+', genre.lower())
+            print(words)
             most_common_genre = Counter(words).most_common(1)
-            return most_common_genre[0] if most_common_genre else None
+            print(most_common_genre)
+            return most_common_genre[0][0] 
         highest_genre = most_common_genre()
         
         def most_common_year():
@@ -119,7 +121,7 @@ class GameWindow:
                 year = f.read()
             words = re.findall(r'\w+', year.lower())
             most_common_year = Counter(words).most_common(1)
-            return most_common_year[0] if most_common_year else None   
+            return most_common_year[0][0] if most_common_year else None   
         highest_year = most_common_year()
         
         def most_common_artist():
@@ -127,7 +129,7 @@ class GameWindow:
                 artist = f.read()
             words = re.findall(r'\w+', artist.lower())
             most_common_artist = Counter(words).most_common(1)
-            return most_common_artist[0] if most_common_artist else None  
+            return most_common_artist[0][0] if most_common_artist else None  
         highest_artist = most_common_artist()
         
         #send the highest genre, year and artist to the database
@@ -137,17 +139,15 @@ class GameWindow:
                 )
         conn.commit()
         # get the highest points from the database
-        cursor.execute("SELECT best_artist FROM stats")
-        best_artist = cursor.fetchone()
-        # get the highest accuracy from the database
-        cursor.execute("SELECT accuracy FROM stats")
-        accuracy = cursor.fetchone()
-        # get the highest genre from the database
-        cursor.execute("SELECT best_genre FROM stats")
-        highest_genre = cursor.fetchone()
-        #get the highest year from the database
-        cursor.execute("SELECT best_year FROM stats")
-        highest_year = cursor.fetchone()
+        cursor.execute("SELECT * FROM stats WHERE user_id=?", (1,))
+        user_data = cursor.fetchone()
+
+        best_genre = user_data[1]
+        best_artist = user_data[2]
+        best_year = user_data[3]
+        best_points = user_data[4]
+        accuracy = user_data[5]
+       
         # display the highest genre, year, artist, points and accuracy
         Label(stats_window, text=f"Best Genre: {highest_genre}").pack()
         Label(stats_window, text=f"Best Artist: {best_artist}").pack()
@@ -448,6 +448,7 @@ class GameWindow:
     def next(self, audio_file_):
         self.play_next(audio_file_)
 
+    # IS THIS DEFENSIVE PROGRAMMING HELPFUL AS WHEN AM I CHECKING IF THE VALUES = 0
     def choose_random_mp3(self, audio_file_):
         # Get a list of all MP3 files in the directory
         try:
