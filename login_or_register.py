@@ -15,6 +15,7 @@ import tkinter as tkinter
 
 import sqlite3
 
+user_id = None
 # connect to the database
 conn = sqlite3.connect("users_client.db")
 cursor = conn.cursor()
@@ -62,17 +63,21 @@ def login(client):
         user_entered = username.get()
         if not repeat_username(user_entered):
             user_not_found_message()
-            return
+            return None
 
         password_entered = password.get()
-        if not verify(user_entered, password_entered):
+        global user_id
+        user_id = verify(user_entered, password_entered)
+        if user_id is None:
             wrong_password_message()
-            return
+            return None
         else:
             window2.destroy()
             # login successful
             #send message to server to say login was succesful
             client.send("LOGIN_SUCCESSFUL")
+
+        return user_id
             
 
     Button(window2, text="Login", command=try_login).pack()
@@ -138,14 +143,15 @@ def repeat_username(username):
 
 def verify(username, password):
     # check if the username and password are correct from the database
-    cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+    cursor.execute("SELECT password, user_id FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
+    print(result)
     if result is not None:
         hashed_password = result[0]
         if hashed_password == hash_password(password):
             # Correct password
-            return True
-    return False
+            return result[1]
+    return None
 
 
 def username_saving():

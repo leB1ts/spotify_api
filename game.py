@@ -17,7 +17,7 @@ import sqlite3
 from collections import Counter
 import re
 from tinytag import TinyTag
-
+import login_or_register
 
 from tkinter import Toplevel, Label, Button, Entry, Tk
 import tkinter as tkinter
@@ -139,8 +139,11 @@ class GameWindow:
                 )
         conn.commit()
         # get the highest points from the database
-        cursor.execute("SELECT * FROM stats WHERE user_id=?", (1,))
-        user_data = cursor.fetchone()
+        print(login_or_register.user_id)
+        cursor.execute("SELECT * FROM stats WHERE user_id=?", (login_or_register.user_id,))
+        user_datas = cursor.fetchall()
+        user_data = user_datas.pop()
+        print(user_data)
 
         best_genre = user_data[1]
         best_artist = user_data[2]
@@ -149,9 +152,9 @@ class GameWindow:
         accuracy = user_data[5]
        
         # display the highest genre, year, artist, points and accuracy
-        Label(stats_window, text=f"Best Genre: {highest_genre}").pack()
+        Label(stats_window, text=f"Best Genre: {best_genre}").pack()
         Label(stats_window, text=f"Best Artist: {best_artist}").pack()
-        Label(stats_window, text=f"Best Year: {highest_year}").pack()
+        Label(stats_window, text=f"Best Year: {best_year}").pack()
         Label(stats_window, text=f"Accuracy: {accuracy}").pack()
         
         
