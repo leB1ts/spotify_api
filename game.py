@@ -18,7 +18,7 @@ from collections import Counter
 import re
 from tinytag import TinyTag
 import login_or_register
-
+from urllib.parse import urlencode
 from tkinter import Toplevel, Label, Button, Entry, Tk
 import tkinter as tkinter
 
@@ -98,7 +98,7 @@ class GameWindow:
         self.window2 = Toplevel()
         self.window2.geometry("500x300")
         self.window2.title("Guess the artist or song")
-        Button(self.window2, text="Close", command=self.deleting).pack()
+        Button(self.window2, text="Close", command=self.window2.destroy).pack()
         Button(self.window2, text="Play", command=self.download_song).pack()
 
     def show_stats(self):
@@ -108,7 +108,7 @@ class GameWindow:
         # get the best genre from the text file
         def most_common_genre():
             with open("genre.txt", "r") as f:
-                genre = f.read()
+                genre = f.read().replace("_", " ")
             words = re.findall(r'\w+', genre.lower())
             print(words)
             most_common_genre = Counter(words).most_common(1)
@@ -126,7 +126,7 @@ class GameWindow:
         
         def most_common_artist():
             with open("artist.txt", "r") as f:
-                artist = f.read()
+                artist = f.read().replace("_", " ")
             words = re.findall(r'\w+', artist.lower())
             most_common_artist = Counter(words).most_common(1)
             return most_common_artist[0][0] if most_common_artist else None  
@@ -176,9 +176,9 @@ class GameWindow:
             genre_value = str(genre_entry.get()).strip()
             #SEND THE GENRE VALUE TO THE SERVER WHERE THE SERVER WILL DOWNLOAD THE SONG
             # NEED A TRY AND EXCEPT FOR THE GENRE TO ACTUALLY EXIST
-            genre = "genre:" + genre_value
+            genre = { "genre":  genre_value }
             #how to send the genre to the server?
-            self.client.send(genre)
+            self.client.send(urlencode(genre))
             #track_urls = [
             #    [x["name"], x["external_urls"]["spotify"]]
              #   for x in spotify.search(genre, offset=offset)["tracks"]["items"]
@@ -230,8 +230,9 @@ class GameWindow:
             # Grab the user input
             global artist_value
             artist_value = str(artist_entry.get()).strip()
-            artist = "name:" + artist_value
-            self.client.send(artist)
+            artist = { "artist":  artist_value }
+            cheat = False
+            self.client.send(urlencode(artist))
             #track_urls = [
             #    [x["name"], x["external_urls"]["spotify"]]
              #   for x in spotify.search(artist, offset=offset)["tracks"]["items"]
@@ -275,7 +276,7 @@ class GameWindow:
         year_window = Toplevel()
         year_window.geometry("300x200")
         Label(
-            year_window, text="Enter a specific Year or a range/n i.e 1960-1969"
+            year_window, text="Enter a specific Year"
         ).pack()
         year_entry = Entry(year_window)
         year_entry.pack()
@@ -285,8 +286,8 @@ class GameWindow:
             # Grab the user input
             global year_value
             year_value = str(year_entry.get()).strip()
-            year = "year:" + year_value
-            self.client.send(year)
+            year = { "year":  year_value }
+            self.client.send(urlencode(year))
             #track_urls = [
             #    [x["name"], x["external_urls"]["spotify"]]
             #    for x in spotify.search(year, offset=offset)["tracks"]["items"]
@@ -351,7 +352,7 @@ class GameWindow:
             seconds -= 1
         self.deleting_next(audio_file_)
 
-    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year):
+    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year, cheat):
         guess_window = Toplevel()
         self.guess_window = guess_window
         guess_window.geometry("300x200")
@@ -373,13 +374,14 @@ class GameWindow:
         
         print(track_name+"+"+artist_name)
         
-        
-        
 
         
         answers = [track_name, artist_name]
         l = answers[0].lstrip()
         r = answers[1].rstrip()
+        if cheat == False:
+            r = "cantcheat"
+        
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
             # Grab the user input
@@ -400,13 +402,13 @@ class GameWindow:
                 # wrtie the genre to a text file
                 with open("genre.txt", "w") as f:
                     
-                    f.write(save_genre)
+                    f.write(save_genre.replace(" ", "_"))
                 # for the most common value of the genre store it in the database
 
                 # wrtie the artist to a text file
                 with open("artist.txt", "w") as f:
                     
-                    f.write(save_artist)
+                    f.write(save_artist.replace(" ", "_"))
                 # wrtie the year to a text file
                 with open("year.txt", "w") as f:
                     
