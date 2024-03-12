@@ -107,8 +107,10 @@ class GameServer:
                     #how to get the song name and artist from the song object
 
                     for song in songs:
+                        print(song, query_parsed)
                         if filter(song, query_parsed):
                             spotdl.download(song)
+                            print(f"Downloaded song: {song}")
                             download_count += 1
                             break
                     
@@ -117,18 +119,18 @@ class GameServer:
             if download_count >= 10:
                 break
             else:
-                offset += 100
+                offset += 10
         client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
 
     def download_genre(self, genre, client):
         self.download_song(genre, client, lambda song, query: any(genre in query["genre"] for genre in song.genres))
 
     def download_artist(self, name, client):
-        self.download_song(name, client, lambda song, query: song.artist == query["name"])
+        self.download_song(name, client, lambda song, query: any(artist in query["artist"] for artist in song.artists))
 
     # doesnt work correctly
     def download_year(self, year, client):
-        self.download_song(year, client, lambda song, query: song.year == query["year"])
+        self.download_song(year, client, lambda song, query: song.year == query["year"][0])
 
     def random_genre(self, client):
         options = [
