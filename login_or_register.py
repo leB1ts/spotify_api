@@ -35,6 +35,7 @@ conn.commit()
 def user_not_found_message():
     # message to display if the user is not found
     window5 = Toplevel()
+    print("User not found")
     Label(window5, text="User not found").pack()
     Button(window5, text="Ok", command=window5.destroy).pack()
 
@@ -42,6 +43,7 @@ def user_not_found_message():
 def wrong_password_message():
     # message to display if the password is wrong
     window6 = Toplevel()
+    print("Wrong password")
     Label(window6, text="Wrong password").pack()
     Button(window6, text="Ok", command=window6.destroy).pack()
 
@@ -61,9 +63,10 @@ def login(client):
 
     def try_login():
         user_entered = username.get()
-        if not repeat_username(user_entered):
-            user_not_found_message()
-            return None
+        # To do: check the username is in the database (optional as it's done implicitly in verify() function)
+        # if not is_repeat_username(user_entered): 
+        #     user_not_found_message()
+        #     return None
 
         password_entered = password.get()
         global user_id
@@ -102,6 +105,7 @@ def generate_password():
 def password_message(password):
     # message to display the password
     window4 = Toplevel()
+    print("Your password is " + password)
     Label(
         window4, text="Your password is " + password + "\nWrite it down to remember"
     ).pack()
@@ -131,7 +135,7 @@ def save_user(entered_username, password, client):
         login(client)
 
 
-def repeat_username(username):
+def is_repeat_username(username):
     # checking if the username is already in the database
     cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
     if cursor.fetchone() is not None:
@@ -158,7 +162,7 @@ def username_saving():
     global username_entry
     global entered_username
     entered_username = username_entry.get()
-    if repeat_username(entered_username):
+    if is_repeat_username(entered_username):
         return
     else:
         return entered_username
@@ -186,6 +190,7 @@ def register(client):
 def username_exists_message():
     # message to display if the username already exists
     window3 = Toplevel()
+    print("Username already exists")
     Label(window3, text="Username already exists")
     Button(window3, text="Ok", command=window3.destroy).pack()
 

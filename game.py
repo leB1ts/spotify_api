@@ -231,7 +231,6 @@ class GameWindow:
             global artist_value
             artist_value = str(artist_entry.get()).strip()
             artist = { "artist":  artist_value }
-            cheat = False
             self.client.send(urlencode(artist))
             #track_urls = [
             #    [x["name"], x["external_urls"]["spotify"]]
@@ -352,7 +351,7 @@ class GameWindow:
             seconds -= 1
         self.deleting_next(audio_file_)
 
-    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year, cheat):
+    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year):
         guess_window = Toplevel()
         self.guess_window = guess_window
         guess_window.geometry("300x200")
@@ -379,8 +378,6 @@ class GameWindow:
         answers = [track_name, artist_name]
         l = answers[0].lstrip()
         r = answers[1].rstrip()
-        if cheat == False:
-            r = "cantcheat"
         
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):

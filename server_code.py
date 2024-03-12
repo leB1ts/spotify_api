@@ -20,6 +20,8 @@ spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
 loop = asyncio.new_event_loop()
 spotdl = Spotdl(client_id, client_secret, loop=loop)
 
+target_song_count = 3
+
 class GameServer:
     def __init__(self, host="localhost", port=6942):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -94,7 +96,7 @@ class GameServer:
             # optional optimisation:
             # use threading to download all the songs at once
             for track in track_urls:
-                if download_count >= 10:
+                if download_count >= target_song_count:
                     break
                 print(f"Searching for song: {track[0]}")
 
@@ -116,10 +118,10 @@ class GameServer:
                     
                 except Exception as e:
                     print(f"An error occurred: {e}")
-            if download_count >= 10:
+            if download_count >= target_song_count:
                 break
             else:
-                offset += 10
+                offset += target_song_count
         client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
 
     def download_genre(self, genre, client):
