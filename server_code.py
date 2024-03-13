@@ -23,7 +23,7 @@ spotdl = Spotdl(client_id, client_secret, loop=loop)
 target_song_count = 3
 
 class GameServer:
-    def __init__(self, host="localhost", port=6942):
+    def __init__(self, host="localhost", port=7000):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((host, port))
         self.server.listen(5)
@@ -144,26 +144,58 @@ class GameServer:
         self.download_song(name, client, lambda song, query: query["track"][0].lower() in song.name)
 
     def random_genre(self, client):
-        options = [
-            "pop",
-            "rock",
-            "rap",
-            "country",
-            "metal",
-            "hip-hop",
-            "indie",
-            "alternative",
-            "electronic",
-            "folk",
-            "blues",
-            "jazz",
-            "reggae",
-            "latin",
-            "classical",
-        ]
-        random_genre = random.choice(options)
-        print(f"Random genre: {random_genre}")
-        self.download_genre(random_genre, client)
+        
+        download_count = 0
+        #DOES BY SONGS OR ARITSTS WITH GENRE IN THE NAME
+        #download 10 songs from the genre
+        
+        playlist_link = "5ABHKGoOzxkaa28ttQV9sE"
+
+        while True:
+           
+            results = spotify.user_playlist_tracks(playlist_id=playlist_link, limit=target_song_count, offset=0)
+            tracks = results['items']
+            print(tracks)
+
+
+
+            asyncio.set_event_loop(loop)
+
+            # optional optimisation:
+            # use threading to download all the songs at once
+            for track in tracks:
+                if download_count >= target_song_count:
+                    break
+                print(f"Searching for song: {track["track"]["name"]}")
+
+                track_uri = track["track"]["uri"]
+                name = track["track"]["name"]
+                artist = track["track"]["artists"][0]["name"]
+                songs = spotdl.search(name)
+
+                
+                print(f"Found songs: {songs}")
+                
+                
+                try:
+                    print(f"Downloading song: {songs}")
+                    #how to get the song name and artist from the song object
+
+                    for song in songs:
+                        if song.artists[0] == artist:
+                        
+                            spotdl.download(song)
+                            print(f"Downloaded song: {song}")
+                        
+                            download_count += 1
+                            break
+                    
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+            if download_count >= target_song_count:
+                break
+          
+        client.sendall("SONGS_DOWNLOADED".encode("utf-8"))
 
 
 

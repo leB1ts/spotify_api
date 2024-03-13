@@ -8,7 +8,7 @@ import random
 import threading
 
 class GameClient:
-    def __init__(self, host="localhost", port=6942):
+    def __init__(self, host="localhost", port=7000):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((host, port))
 

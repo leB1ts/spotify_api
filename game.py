@@ -386,6 +386,8 @@ class GameWindow:
         #    answers = [artist_name]
         #else:
         answers = [track_name, artist_name]
+        l = answers[0].lstrip()
+        r = answers[1].rstrip()
         
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
@@ -397,7 +399,7 @@ class GameWindow:
             total_guesses += 1
 
             # Check their answer is within the answers array
-            if value in answers:
+            if value.lower() == l.lower() or value.lower() == r.lower():
                 Label(guess_window, text="correct").pack()
                 global points
                 points = points + seconds
