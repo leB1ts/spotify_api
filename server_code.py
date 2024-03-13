@@ -58,14 +58,20 @@ class GameServer:
                     self.download_genre(genre, client)
                 if data.startswith("artist="): # name:Travis Scott genre:rock
                     #download the song
-                    name = data
-                    print(f"Downloading {name}")
-                    self.download_artist(name, client)
-                if data.startswith("year="):
+                    artist = data
+                    print(f"Downloading {artist}")
+                    self.download_artist(artist, client)
+                # spotify searches cant be done by year so by song name will be done instead
+                #if data.startswith("year="):
                     #download the song
-                    year = data
-                    print(f"Downloading song from {year}")
-                    self.download_year(year, client)
+                 #   year = data
+                  #  print(f"Downloading song from {year}")
+                   # self.download_year(year, client)
+                if data.startswith("track="):
+                    #download the song
+                    name = data
+                    print(f"Downloading songs called {name}")
+                    self.download_name(name, client)
                 if data.startswith("random"):
                     #download a random genre
                     print("Downloading random genre")
@@ -110,9 +116,11 @@ class GameServer:
 
                     for song in songs:
                         print(song, query_parsed)
+
                         if filter(song, query_parsed):
                             spotdl.download(song)
                             print(f"Downloaded song: {song}")
+                        
                             download_count += 1
                             break
                     
@@ -127,12 +135,13 @@ class GameServer:
     def download_genre(self, genre, client):
         self.download_song(genre, client, lambda song, query: any(genre in query["genre"] for genre in song.genres))
 
-    def download_artist(self, name, client):
-        self.download_song(name, client, lambda song, query: any(artist in query["artist"] for artist in song.artists))
+    def download_artist(self, artist, client):
+        self.download_song(artist, client, lambda song, query: any(artist in query["artist"] for artist in song.artists))
 
     # doesnt work correctly
-    def download_year(self, year, client):
-        self.download_song(year, client, lambda song, query: song.year == query["year"][0])
+    def download_name(self, name, client):
+        print("Downloading song by ", name)
+        self.download_song(name, client, lambda song, query: query["track"][0].lower() in song.name)
 
     def random_genre(self, client):
         options = [

@@ -218,6 +218,8 @@ class GameWindow:
         genre_window.grab_set()
 
     def the_artist(self):
+        global guess_type
+        guess_type = "track"
         offset = random.randint(0, 50)
         artist_window = Toplevel()
         artist_window.geometry("300x200")
@@ -271,11 +273,13 @@ class GameWindow:
         artist_window.grab_set()
 
     def the_year(self):
+        global guess_type
+        guess_type = "track"
         offset = random.randint(0, 1000)
         year_window = Toplevel()
         year_window.geometry("300x200")
         Label(
-            year_window, text="Enter a specific Year"
+            year_window, text="Enter a specific song name"
         ).pack()
         year_entry = Entry(year_window)
         year_entry.pack()
@@ -283,9 +287,11 @@ class GameWindow:
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
             # Grab the user input
-            global year_value
-            year_value = str(year_entry.get()).strip()
-            year = { "year":  year_value }
+            global name_value
+            name_value = str(year_entry.get()).strip()
+            print(name_value)
+            year = { "track":  name_value }
+            print(year)
             self.client.send(urlencode(year))
             #track_urls = [
             #    [x["name"], x["external_urls"]["spotify"]]
@@ -374,10 +380,12 @@ class GameWindow:
         print(track_name+"+"+artist_name)
         
 
-        
+        #if guess_type == "artist":
+        #    answers = [track_name]
+        #if guess_type == "track":
+        #    answers = [artist_name]
+        #else:
         answers = [track_name, artist_name]
-        l = answers[0].lstrip()
-        r = answers[1].rstrip()
         
         # Called whenever we press the enter key
         def key_pressed(key: tkinter.Event):
@@ -389,7 +397,7 @@ class GameWindow:
             total_guesses += 1
 
             # Check their answer is within the answers array
-            if value.lower() == l.lower() or value.lower() == r.lower():
+            if value in answers:
                 Label(guess_window, text="correct").pack()
                 global points
                 points = points + seconds
@@ -435,7 +443,7 @@ class GameWindow:
 
     def play_audio(self, audio_file,audio_file_, save_genre, save_artist, save_year):
         playing = AudioSegment.from_mp3(audio_file)
-        ten_seconds = 10 * 1000
+        ten_seconds = 20 * 1000
         first_10_seconds = playing[:ten_seconds]
         threading.Thread(target=play, args=(first_10_seconds,)).start()
 
