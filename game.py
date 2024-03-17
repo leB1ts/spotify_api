@@ -22,6 +22,8 @@ from urllib.parse import urlencode
 from tkinter import Toplevel, Label, Button, Entry, Tk
 import tkinter as tkinter
 
+
+
 # global variables
 global points
 points = 0
@@ -32,7 +34,7 @@ correct_guesses = 0
 
 
 # connect to the database
-conn = sqlite3.connect("users_client.db")
+conn = sqlite3.connect("fresher.db")
 cursor = conn.cursor()
 # add streaks maybe
 cursor.execute(
@@ -42,21 +44,21 @@ cursor.execute(
     best_genre TEXT,
     best_artist TEXT,
     best_year INTEGER,
-    best_points INTEGER,
-    accuracy INTEGER 
+    accuracy INTEGER,
+    average_guess_time INTEGER 
   )
 """
 )
 conn.commit()
 
-load_dotenv()
+#load_dotenv()
 
-client_id = os.environ.get("SPOTIPY_CLIENT_ID")
-client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
+#client_id = os.environ.get("SPOTIPY_CLIENT_ID")
+#client_secret = os.environ.get("SPOTIPY_CLIENT_SECRET")
 
 
-spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
-spotdl = Spotdl(client_id, client_secret)
+#spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
+#spotdl = Spotdl(client_id, client_secret)
 
 
 
@@ -77,7 +79,7 @@ class GameWindow:
         self.audio_file = None
         self.genre_value = None
         self.artist_value = None
-        self.year_value = None
+        self.name_value = None
 
     def start_game(self, client):
         self.client = client
@@ -108,8 +110,8 @@ class GameWindow:
         # get the best genre from the text file
         def most_common_genre():
             with open("genre.txt", "r") as f:
-                genre = f.read().replace("_", " ")
-            words = re.findall(r'\w+', genre.lower())
+                genre = f.read()
+            words = genre.lower().split(",")
             print(words)
             most_common_genre = Counter(words).most_common(1)
             print(most_common_genre)
@@ -119,43 +121,54 @@ class GameWindow:
         def most_common_year():
             with open("year.txt", "r") as f:
                 year = f.read()
-            words = re.findall(r'\w+', year.lower())
+            words = year.lower().split(",")
             most_common_year = Counter(words).most_common(1)
-            return most_common_year[0][0] if most_common_year else None   
+            return most_common_year[0][0]    
         highest_year = most_common_year()
         
         def most_common_artist():
             with open("artist.txt", "r") as f:
-                artist = f.read().replace("_", " ")
-            words = re.findall(r'\w+', artist.lower())
+                artist = f.read()
+            words = artist.lower().split(",")
             most_common_artist = Counter(words).most_common(1)
-            return most_common_artist[0][0] if most_common_artist else None  
+            return most_common_artist[0][0]  
         highest_artist = most_common_artist()
         
         #send the highest genre, year and artist to the database
-        cursor.execute(
-              "INSERT INTO stats(best_genre, best_artist, best_year) VALUES(?,?,?)",
-                    (highest_genre, highest_artist, highest_year),
-                )
+        cursor.execute("""
+INSERT OR REPLACE INTO stats(user_id, best_genre, best_artist, best_year, accuracy, average_guess_time) 
+VALUES(?, ?, ?, ?, 
+(SELECT accuracy FROM stats WHERE user_id = ?), 
+(SELECT average_guess_time FROM stats WHERE user_id = ?))
+""", (login_or_register.user_id, highest_genre, highest_artist, highest_year, login_or_register.user_id, login_or_register.user_id))
         conn.commit()
         # get the highest points from the database
         print(login_or_register.user_id)
         cursor.execute("SELECT * FROM stats WHERE user_id=?", (login_or_register.user_id,))
-        user_datas = cursor.fetchall()
-        user_data = user_datas.pop()
+        user_data = cursor.fetchall()
         print(user_data)
+        if user_data:
+            row = user_data[0]
 
-        best_genre = user_data[1]
-        best_artist = user_data[2]
-        best_year = user_data[3]
-        best_points = user_data[4]
-        accuracy = user_data[5]
+
+            best_genre = row[1]
+            best_artist = row[2]
+            best_year = row[3]
+            accuracy = row[4]
+            average_guess_time = row[5]
+        else:
+            best_genre = "No Genre"
+            best_artist = "No Artist"
+            best_year = "No Year"
+            accuracy = "No Accuracy"
+            average_guess_time = "No Average Guess Time"
        
         # display the highest genre, year, artist, points and accuracy
         Label(stats_window, text=f"Best Genre: {best_genre}").pack()
         Label(stats_window, text=f"Best Artist: {best_artist}").pack()
         Label(stats_window, text=f"Best Year: {best_year}").pack()
         Label(stats_window, text=f"Accuracy: {accuracy}").pack()
+        Label(stats_window, text=f"Average Guess Time: {average_guess_time}").pack()
         
         
 
@@ -357,7 +370,7 @@ class GameWindow:
             seconds -= 1
         self.deleting_next(audio_file_)
 
-    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_year):
+    def guess(self, audio_file_, audio_file, save_genre, save_artist, save_name):
         guess_window = Toplevel()
         self.guess_window = guess_window
         guess_window.geometry("300x200")
@@ -403,29 +416,38 @@ class GameWindow:
                 Label(guess_window, text="correct").pack()
                 global points
                 points = points + seconds
+                guess_time = int(20 - seconds)
+                with open("guess_time.txt", "a") as f:
+                    f.write(str(guess_time) + ",")
+                with open("guess_time.txt", "r") as f:
+                    guess_times = [int(value) for line in f.readlines() for value in line.strip().split(",") if value]
+                
+                average_guess_time = sum(guess_times) / len(guess_times)
+                
                 global correct_guesses
                 correct_guesses += 1
                 accuracy = (correct_guesses / total_guesses) * 100
                 # wrtie the genre to a text file
-                with open("genre.txt", "w") as f:
+                with open("genre.txt", "a") as f:
                     
-                    f.write(save_genre.replace(" ", "_"))
+                    f.write(save_genre+ ",")
                 # for the most common value of the genre store it in the database
 
                 # wrtie the artist to a text file
-                with open("artist.txt", "w") as f:
+                with open("artist.txt", "a") as f:
                     
-                    f.write(save_artist.replace(" ", "_"))
+                    f.write(save_artist+ ",")
                 # wrtie the year to a text file
-                with open("year.txt", "w") as f:
+                with open("year.txt", "a") as f:
                     
-                    f.write(str(save_year))
+                    f.write(save_name+ ",")
                 # send key info to stats page via sql
                 cursor.execute(
                 """
-                INSERT INTO stats(accuracy) VALUES(?)
+                INSERT OR REPLACE INTO stats(user_id, accuracy, average_guess_time, best_genre, best_artist, best_year) 
+                SELECT ?, ?, ?, best_genre, best_artist, best_year FROM stats WHERE user_id = ?
                 """,
-                    (accuracy,),
+                    (login_or_register.user_id, accuracy, average_guess_time, login_or_register.user_id),
                 )
                 conn.commit()
 
@@ -443,13 +465,13 @@ class GameWindow:
 
         return thread
 
-    def play_audio(self, audio_file,audio_file_, save_genre, save_artist, save_year):
+    def play_audio(self, audio_file,audio_file_, save_genre, save_artist, save_name):
         playing = AudioSegment.from_mp3(audio_file)
         ten_seconds = 20 * 1000
         first_10_seconds = playing[:ten_seconds]
         threading.Thread(target=play, args=(first_10_seconds,)).start()
 
-        return self.guess(audio_file, audio_file_, save_genre, save_artist, save_year)
+        return self.guess(audio_file, audio_file_, save_genre, save_artist, save_name)
         
     def deleting_next(self, audio_file_):
         # delete the song after it has been played and move onto the next song
@@ -469,10 +491,10 @@ class GameWindow:
             tag = TinyTag.get(audio_file_)
             save_genre = tag.genre
             save_artist = tag.artist
-            save_year = tag.year
+            save_name = tag.title
 
 
-            return audio_file_, save_genre, save_artist, save_year
+            return audio_file_, save_genre, save_artist, save_name
         
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -497,10 +519,10 @@ class GameWindow:
 
     def play_next(self, audio_file_):
         # choose the first song to play
-        audio_file, save_genre, save_artist, save_year = self.choose_random_mp3(audio_file_)
+        audio_file, save_genre, save_artist, save_name = self.choose_random_mp3(audio_file_)
 
         #guess bit here as well
-        return self.play_audio(audio_file, audio_file_, save_genre, save_artist, save_year)
+        return self.play_audio(audio_file, audio_file_, save_genre, save_artist, save_name)
         # threading.Thread(target=self.play_audio, args=(audio_file, audio_file_, save_genre, save_artist, save_year)).start()
 
     def deleting(self, audio_file_):

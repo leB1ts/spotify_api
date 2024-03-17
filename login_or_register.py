@@ -17,7 +17,7 @@ import sqlite3
 
 user_id = None
 # connect to the database
-conn = sqlite3.connect("users_client.db")
+conn = sqlite3.connect("fresher.db")
 cursor = conn.cursor()
 cursor.execute(
     """
@@ -71,6 +71,7 @@ def login(client):
         password_entered = password.get()
         global user_id
         user_id = verify(user_entered, password_entered)
+        print(user_id)
         if user_id is None:
             wrong_password_message()
             return None
@@ -79,11 +80,14 @@ def login(client):
             # login successful
             #send message to server to say login was succesful
             client.send("LOGIN_SUCCESSFUL")
+            
 
-        return user_id
+        
             
 
     Button(window2, text="Login", command=try_login).pack()
+    
+    
 
 
 user_filepath = "users.txt"
@@ -190,8 +194,7 @@ def register(client):
 def username_exists_message():
     # message to display if the username already exists
     window3 = Toplevel()
-    print("Username already exists")
-    Label(window3, text="Username already exists")
+    Label(window3, text="Username already exists").pack()
     Button(window3, text="Ok", command=window3.destroy).pack()
 
 
